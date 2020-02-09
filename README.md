@@ -77,7 +77,7 @@ var t = Transaction(t =>
            Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
        })
        .Select(r => (string) r[0]) //Create the objects
-       .ToList();
+       .ToList(); //Connection will close if iterator is returned immediately, call ToList() or create another collection.
 });
 ```
 - Or:
@@ -90,7 +90,7 @@ return await TransactionAsync(t =>
                     .Where("name like @name")
                     .Limit(5)
                     .Select(r => (string) r[0]) //Create the objects
-                    .ToList();
+                    .ToList(); //Connection will close if iterator is returned immediately, call ToList() or create another collection.
             });
 ```
 
@@ -105,7 +105,7 @@ return await QueryAsync<List<string>>('Some query', cmd =>
                 {
                     return cmd
                         .Select(r=>(string)r[0]) //Create the objects
-                        .ToList();
+                        .ToList(); //Connection will close if iterator is returned immediately, call ToList() or create another collection.
                 }
             });
 
