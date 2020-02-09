@@ -116,7 +116,10 @@ var i = p.Query()
     .Set('Some update/delete query')
     .Param("DBID",10)
     .Where("DBID = @DBID")
-    .AddRollback(() => 'some C# rollback action')
+    .AddRollback(() =>
+    {
+       Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
+    })
     .Run(); //ExecuteNonQuery
 
 var res1 = !p.Query()
@@ -131,7 +134,10 @@ for (var counter = 1; counter< 10;counter++)
         .Set('Update/delete query')
         .Param("DBID",10)
         .Where("DBID = @DBID")
-        .AddRollback(() => 'some C# rollback action')
+        .AddRollback(() =>
+        {
+            Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
+        })
         .Run(); //ExecuteNonQuery
 }
 
@@ -173,7 +179,10 @@ return await PoolAsync(async p =>
                     .Set(ExampleQuery1)
                     .Param("name","John Doe")
                     .Where("name like @name")
-                    .AddRollback(() => { })
+                    .AddRollback(() =>
+                    {
+                        Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
+                    })
                     .ScalarAsync();
 
                 var res2 =await  p.Query<long>(Database2)
