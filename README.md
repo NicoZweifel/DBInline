@@ -36,7 +36,7 @@
 # Async
 
 - Contains async versions for every method also async Lambda Pool versions,
-  so you can query different Databases at the same time and everything will be rollbacked if an exception occurs.
+  in case it's necessary to query different Databases at the same time with everything beeing rollbacked if an exception occurs.
 
 # Usage
 
