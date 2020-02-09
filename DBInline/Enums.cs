@@ -10,6 +10,5 @@ namespace DBInline
         Mssql = 2,
         Mysql = 3,
         SqlLite =4,
-        ElasticSearch = 5
     }
 }
