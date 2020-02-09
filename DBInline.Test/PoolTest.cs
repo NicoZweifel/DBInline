@@ -110,9 +110,9 @@ namespace DBInline.Test
         }
         
         [Test(ExpectedResult = "True86True"), Order(3), NonParallelizable]
-        public  string PoolSyntaxTest()
+        public string PoolSyntaxTest()
         {
-           var t =  Pool(async p =>
+            var t = PoolAsync(async p =>
             {
                 var asyncIe =  p.Query<string>()
                     .Set(ExampleQuery3)
@@ -134,10 +134,11 @@ namespace DBInline.Test
                 {
                     json += obj;
                 }
-                return json.Any() + await res1 +  (res2 > 0);
+
+                return json.Any() + await res + (await t2 > 0);
             });
-           t.Wait();
-           return t.Result;
+            t.Wait();
+            return t.Result;
         }
 
         [Test(ExpectedResult = "86_5_5156572898"), Order(4), NonParallelizable]

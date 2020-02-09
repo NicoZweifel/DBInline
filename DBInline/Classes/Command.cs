@@ -42,10 +42,7 @@ namespace DBInline.Classes
             {
                 return default;
             }
-            else
-            {
-                return (T)res;
-            }
+            return (T)res;
         }
 
         public async Task<T> ScalarAsync()
@@ -55,28 +52,27 @@ namespace DBInline.Classes
             {
                 return default;
             }
-            else
-            {
-                return (T)res;
-            }
+            return (T)res;
         }
         
 
-        public IEnumerable<T> Select(Func<IDataReader, T> transform)
+        public new IEnumerable<TOut> Select<TOut>(Func<IDataReader, TOut> transform)
         {
             using var r = ExecuteReader();
             while (r.Read())
             {
                yield return transform(r);
             }
+            r.Close();
         }
-        public async IAsyncEnumerable<T> SelectAsync(Func<IDataReader, T> transform)
+        public new async IAsyncEnumerable<TOut> SelectAsync<TOut>(Func<IDataReader, TOut> transform)
         {
             await using var r = ExecuteReader();
             while (await r.ReadAsync())
             {
                 yield return transform(r);
             }
+            await r.CloseAsync().ConfigureAwait(false);
         }
 
         Command<T> ICommandBehaviour<Command<T>>.Set(string text)
@@ -182,22 +178,24 @@ namespace DBInline.Classes
             return res;
         }
 
-        public IEnumerable<T> Select<T>(Func<IDataReader, T> transform)
+        public IEnumerable<TOut> Select<TOut>(Func<IDataReader, TOut> transform)
         {
             using var r = ExecuteReader();
             while (r.Read())
             {
                 yield return transform(r);
             }
+            r.Close();
         }
 
-        public async IAsyncEnumerable<T> SelectAsync<T>(Func<IDataReader, T> transform)
+        public async IAsyncEnumerable<TOut> SelectAsync<TOut>(Func<IDataReader, TOut> transform)
         {
             await using var r = await ExecuteReaderAsync(Token);
             while (r.Read())
             {
                 yield return transform(r);
             }
+            await r.CloseAsync().ConfigureAwait(false);
         }
 
         // ReSharper disable once MemberCanBePrivate.Global
