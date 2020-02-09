@@ -53,7 +53,7 @@
 # Using Pool
 
 - Don't forget to use using ```cs var p = new Pool()``` on this variant, or ur pool will not be rollbacked/disposed/handled properly.
-- If using lambdas is preferred, there static functions that tale a lambda for everything.
+- If using lambdas is preferred, there are static functions that take a lambda as parameter.
 
 - These have to be statically imported.
   E.g.: 
