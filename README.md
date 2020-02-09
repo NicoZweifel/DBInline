@@ -53,7 +53,7 @@
 # Using Pool
 
 - Don't forget to use using ```cs var p = new Pool()``` on this variant, or ur pool will not be rollbacked/disposed/handled properly.
-- If using lambdas is preferred, there static functions that tale a lambda for everything.
+- If using lambdas is preferred, there are static functions that take a lambda as parameter.
 
 - These have to be statically imported.
   E.g.: 
@@ -118,7 +118,7 @@ var t = PoolAsync(async p =>
                 var res1 = "";
                     await foreach(var obj in asyncIe) //AsyncIenumerable
                     {
-                        json += obj;
+                        res1 += obj;
                     }
 
                 var res2 = p.Query<string>()
@@ -132,7 +132,7 @@ var t = PoolAsync(async p =>
                         .TableAsync()) //Select as DataTable
                         .ToJson(); //Create Json from Table
 
-                return res1 + await res + (await t2 > 0);
+                return res1 + await res2 + table;
             });
             t.Wait();
             return t.Result;
@@ -161,15 +161,13 @@ var t = Transaction(t => ...
 ```
 - Or:
 ```cs
-var tsk = TransactionAsync(t =>
+return await TransactionAsync(t =>
             {
                return t.Query<string>()
                     .Set('Some query')
                     .Select(r => (string) r[0]) //Create the objects
                     .ToList();
             });
-            tsk.Wait();
-            return tsk.Result;
 ```
 
 # Tests
