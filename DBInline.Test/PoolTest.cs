@@ -89,7 +89,7 @@ namespace DBInline.Test
                 .ToList()
                 .Any();
             
-            for (var counter = 1; i< 10;i++)
+            for (var counter = 1; counter< 10;counter++)
             {
                 p.Query()
                     .Set("INSERT INTO test (name) VALUES (86)")
@@ -163,9 +163,9 @@ namespace DBInline.Test
                     .Scalar();
 
                 throw new Exception("TEST");
+#pragma warning disable 162
                 return res.ToString() + res2;
-
-                
+#pragma warning restore 162
             }
             catch (Exception ex)
             {
