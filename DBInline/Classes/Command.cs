@@ -569,7 +569,6 @@ namespace DBInline.Classes
         protected void OrInternal(string fieldName, object value)
         {
             var name = GenerateParam(fieldName, value);
-            Param(name, value);
             Or($"{fieldName}={name}");
         }
     }
