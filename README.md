@@ -42,13 +42,13 @@
 
 - It is not forbidden to nest pools, some tests passed, but it is not intended/supported and may yield unexpected results.
 
-- There is a lot of options on how to selec objects (Datatset,Datatable,Reader etc...),
+- There is a lot of options on how to select objects (Datatset,Datatable,Reader etc...),
   which makes the api a little unintuitive in some places, since there is too many options at the moment.
 
 - Some of them might be removed for clearer Usage and improved generic type inference.
 
 - Since everything is connected through interfaces, all these methods can be mixed,
-  it all comes down to a QueryBuilder and ConnectionSource Interfaces
+  it all comes down to a IQueryBuilder and IConnectionSource Interfaces.
 
 # Using Pool
 
@@ -176,4 +176,4 @@ var tsk = TransactionAsync(t =>
 
 - On seperate Branch cause they are a mess.
 - DB Instance dependent and chaotic, see:[Improve Test Project](https://github.com/NicoZweifel/DBInline/issues/1)
-- Eventually there will be Tables generated/deleted in the tests.
+- Eventually there will be Tables generated and used in the tests.
