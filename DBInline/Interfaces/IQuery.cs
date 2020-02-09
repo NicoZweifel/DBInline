@@ -27,6 +27,7 @@ namespace DBInline.Interfaces
         public Task<DataSet> DataSetAsync();
         public  DbDataReader Reader();
         public Task<DbDataReader> ReaderAsync();
+        public IQuery<T> Where(string whereString);
     }
 
     public interface IQuery : ICommandBehaviour , ICommandBehaviour<IQuery>,IWrapCommand , IQueryable
@@ -45,6 +46,7 @@ namespace DBInline.Interfaces
         public Task<T> ScalarAsync<T>();
         public  IEnumerable<TOut> Select<TOut>(Func<IDataReader, TOut> transform);
         public  IAsyncEnumerable<TOut> SelectAsync<TOut>(Func<IDataReader, TOut> transform);
+        public IQuery Where(string whereString);
     }
     
     

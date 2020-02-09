@@ -33,8 +33,12 @@ namespace DBInline.Classes
             CommandText = text;
             return this;
         }
-
-
+        public IQuery<T> Where(string whereString)
+        {
+            CommandText += $" WHERE {whereString}";
+            return this;
+        }
+        
         public T Scalar()
         {
             var res = ExecuteScalar();
@@ -196,6 +200,12 @@ namespace DBInline.Classes
                 yield return transform(r);
             }
             await r.CloseAsync().ConfigureAwait(false);
+        }
+
+        public IQuery Where(string whereString)
+        {
+            CommandText += $" WHERE {whereString}";
+            return this;
         }
 
         // ReSharper disable once MemberCanBePrivate.Global
