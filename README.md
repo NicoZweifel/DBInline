@@ -84,9 +84,9 @@ return await TransactionAsync(t =>
             {
                return t.Query<string>()
                     .Set('Some query')
-		                .Param("name","John Doe")
+		    .Param("name","John Doe")
                     .Where("name like @name")
-		                .limit(5)
+		    .limit(5)
                     .Select(r => (string) r[0]) //Create the objects
                     .ToList();
             });
