@@ -1,6 +1,5 @@
 ﻿using System;
 using DBInline.Classes;
-using DBInline.Classes.Transactions;
 
 namespace DBInline.Interfaces
 {
@@ -13,13 +12,10 @@ namespace DBInline.Interfaces
         public void OnTransactionCreated(Transaction transaction);
         // ReSharper disable once EventNeverSubscribedTo.Global
         public event TransactionCreated TransactionCreated;
-        
         public void OnTransactionWrapped(Transaction transaction);
         public event TransactionWrapped TransactionWrapped;
-        
         public void OnCommandCreated(Command command);
         public event CommandCreated CommandCreated;
-
         public Transaction Transaction();
         // ReSharper disable once UnusedMemberInSuper.Global
         public Transaction Transaction(string databaseName);
