@@ -129,9 +129,8 @@ return await PoolAsync(async p =>
 
                 var table = p.Query<string>()
                     .Set("")
-                    .TableAsync(); //Select as DataTable
- 
-
+                    .TableAsync('Some select query'); //Select as DataTable
+                    
                 return res1 + await res2 + (await table).ToJson();
             }).ConfigureAwait(false);
 ```
