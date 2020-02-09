@@ -37,7 +37,7 @@ namespace DBInline.Test
         /// <summary>
         /// Creates Table for tests.
         /// </summary>
-        protected const string CreateQuery = "CREATE TABLE dbinline_generated_table (dbid int,name varchar(50));";
+        protected const string CreateQuery = "CREATE TABLE \"dbinline_generated_table\" (dbid int,name varchar(50));";
 
         /// <summary>
         /// Inserts some sample data.
@@ -48,12 +48,12 @@ namespace DBInline.Test
         /// <summary>
         /// Select Query
         /// </summary>
-        protected const string SelectQuery = "SELECT * FROM dbinline_generated_table;";
+        protected const string SelectQuery = "SELECT * FROM \"dbinline_generated_table\";";
         
         /// <summary>
         /// Drops test Table.
         /// </summary>
-        protected const string DropQuery = "DROP TABLE dbinline_generated_table;";
+        protected const string DropQuery = "DROP TABLE IF EXISTS \"dbinline_generated_table\";";
         
         
         /// <summary>
