@@ -34,8 +34,8 @@ namespace DBInline.Test
 
             var peter = p.Query<int>()
                 .Set(SelectQuery)
-                .Where("name","Peter Brown")
-                .Se();
+                .Where("name", "Peter Brown")
+                .Scalar();
 
             Assert.IsTrue(peter == 4, "Name missing.");
 

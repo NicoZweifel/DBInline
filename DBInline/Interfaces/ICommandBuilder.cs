@@ -1,32 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Windows.Input;
-using DBInline.Classes;
-
 namespace DBInline.Interfaces
 {
-    public interface ICommandBuilder<out T> : IAddRollBack, IAddParameter where T : ICommandBuilder<T>
-    {
-        public T Set(string text);
-        public new T Rollback(Action action);
-        public new T Param(string name, object value);
-        public  T Param(IDbDataParameter parameter);
-        public  T Param(SimpleParameter parameter);
-        public new T Parameters(IEnumerable<IDbDataParameter> paramArray);
-        public IOrBuilder<T> Where(string clause);
-        public IOrBuilder<T> Where(string fieldName, object value);
-        public T Order(string clause);
-        public T Limit(int limit);
+    public interface ICommandBuilder<out TBuilder, TOut> : ICommandBuilderCommon<TBuilder> where TBuilder : IQueryCommon
+    { 
+        public IQueryBuilder<TBuilder, TOut> Where(string clause);
+        public IQueryBuilder<TBuilder, TOut> Where(string fieldName, object value);
     }
 
-    public interface IOrBuilder<out T> : ICommandBuilder<T>  where T : ICommandBuilder<T>
+    public interface ICommandBuilder<out TBuilder> : ICommandBuilderCommon<TBuilder> where TBuilder : IQueryCommon
     {
-        public T Or(string clause);
-        public T Or(string fieldName, object value);
-    }
-    
-    public interface ICommandBuilder : IAddRollBack, IAddParameter
-    {
+        public IQueryBuilder<TBuilder> Where(string clause);
+        public IQueryBuilder<TBuilder> Where(string fieldName, object value);
     }
 }

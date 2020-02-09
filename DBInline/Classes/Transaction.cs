@@ -8,7 +8,7 @@ using DBInline.Interfaces;
 
 namespace DBInline.Classes
 {
-    public class Transaction : DbTransaction, ICommandBuilder, ITokenHolder, IConnectionSource
+    public class Transaction : DbTransaction,  IAddRollBack, IAddParameter, ITokenHolder, IConnectionSource
     {
         protected IConnectionSource ConnectionSource { get; set; }
         internal DbTransaction DbTransaction { get; set; }

@@ -85,7 +85,7 @@ namespace DBInline
         /// <param name="body">Customize and execute Command.</param>
         /// <param name="database">Desired Database</param>
         /// <param name="command">CommandText.</param>
-        public static void CmdRun(string database,string command,Action<IQueryBuilder> body)
+        public static void CmdRun(string database,string command,Action<IQuery> body)
         {
            ContextController.ContextByName[database].Transaction(tran =>
             {
@@ -342,11 +342,11 @@ namespace DBInline
         /// <param name="parameterBuilder">Add parameters.</param>
         /// <typeparam name="T">Generic Type T.</typeparam>
         /// <returns>Database Query Result of Type T.</returns>
-        public static T CmdScalar<T>(string command, Action<IQueryBuilder> parameterBuilder)
+        public static T CmdScalar<T>(string command, Action<IQuery<T>> parameterBuilder)
         {
             return QueryRun<T>(command, cmd =>
             {
-                parameterBuilder(cmd.Builder);
+                parameterBuilder(cmd);
                 return cmd.Scalar();
             });
         }
