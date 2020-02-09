@@ -29,7 +29,7 @@ namespace DBInline.Test
         [Test(ExpectedResult = true), Order(1), NonParallelizable]
         public bool RunAsyncIEnumerable ()
         {
-            var pool = PoolAsync(async p =>
+            var pool = Pool(async p =>
             {
                 var values = new List<string>();
                 
