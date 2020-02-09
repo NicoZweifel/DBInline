@@ -33,7 +33,7 @@ namespace DBInline.Interfaces
         
         public void AddOr(string whereClause)
         {
-            _whereClauses[^1] +=  whereClause;
+            _whereClauses[^1] += $" OR {whereClause} ";
         }
 
         internal void BuildClauses(Command command)

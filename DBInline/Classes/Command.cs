@@ -570,7 +570,7 @@ namespace DBInline.Classes
         {
             var name = GenerateParam(fieldName, value);
             Param(name, value);
-            Or($"={fieldName}={name}");
+            Or($"{fieldName}={name}");
         }
     }
 }
