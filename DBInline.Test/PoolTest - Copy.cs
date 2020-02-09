@@ -30,8 +30,8 @@ namespace DBInline.Test
 
             var johnJames = p.Query<string>()
                 .Set(SelectQuery)
-                .Where("name", "John Doe")
-                .Or("name","James Smith")
+                .Where("name", "'John Doe'")
+                .Or("name","'James Smith'")
                 .Select(x=>(string)x[1])
                 .ToList();
             

@@ -167,8 +167,7 @@ namespace DBInline.Classes
 
         Command<T> IOrBuilder<Command<T>>.Or(string fieldName, object value)
         {
-            var name = GenerateParam(fieldName,value);
-            ClauseBuilder.AddOr($"{fieldName}={name}");
+            OrInternal(fieldName,value);
             return this;
         }
     }
@@ -386,7 +385,7 @@ namespace DBInline.Classes
         {
             Interlocked.Increment(ref _generatedParamId);
             var name = $"@{fieldName}_{_generatedParamId}";
-            AddParam((name, value));
+            Param((name, value));
             return name;
         }
 
@@ -488,7 +487,7 @@ namespace DBInline.Classes
         }
 
         // ReSharper disable once UnusedMethodReturnValue.Local
-        private IDbDataParameter AddParam((string name, object value) valueTuple)
+        private IDbDataParameter Param((string name, object value) valueTuple)
         {
             var (name, value) = valueTuple;
             return CreateParameter(name,value);
@@ -559,15 +558,19 @@ namespace DBInline.Classes
 
         public IQuery Or(string clause)
         {
-            ClauseBuilder.OrderClause = clause;
+            ClauseBuilder.AddOr(clause);
             return this;
         }
-
         public IQuery Or(string fieldName, object value)
         {
-            var name = GenerateParam(fieldName, value);
-            Or($"={fieldName}={name}");
+            OrInternal(fieldName, value);
             return this;
+        }
+        protected void OrInternal(string fieldName, object value)
+        {
+            var name = GenerateParam(fieldName, value);
+            Param(name, value);
+            Or($"={fieldName}={name}");
         }
     }
 }

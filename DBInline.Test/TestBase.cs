@@ -43,7 +43,7 @@ namespace DBInline.Test
         /// Inserts some sample data.
         /// </summary>
         protected const string InsertQuery =
-            "INSERT INTO dbinline_generated_table (dbid,name) VALUES ((1,'John Doe'),(2,'James Smith'),(3,'Jack Williams),(4,'Peter Brown''),(5,'Hans Mueller'));";
+            "INSERT INTO dbinline_generated_table (dbid,name) VALUES (1,'John Doe'),(2,'James Smith'),(3,'Jack Williams'),(4,'Peter Brown'),(5,'Hans Mueller');";
 
         /// <summary>
         /// Select Query
