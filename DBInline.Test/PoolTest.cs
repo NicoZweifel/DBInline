@@ -118,13 +118,13 @@ namespace DBInline.Test
                     .Set(ExampleQuery3)
                     .SelectAsync(r=> (string)r[0]);
 
-                var res = p.Query<string>()
+                var res1 = p.Query<string>()
                     .Set(ExampleQuery1)
                     .Param(Param1)
                     .AddRollback(() => { })
                     .ScalarAsync();
 
-                var t2 = p.Query<long>(Database2)
+                var res2 =await  p.Query<long>(Database2)
                     .Set(ExampleQuery2)
                     .Param(Param2)
                     .ScalarAsync();
@@ -134,8 +134,7 @@ namespace DBInline.Test
                 {
                     json += obj;
                 }
-
-                return json.Any() + await res + (await t2 > 0);
+                return json.Any() + await res1 + (res2 > 0);
             });
             t.Wait();
             return t.Result;

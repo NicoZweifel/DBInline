@@ -43,8 +43,8 @@ namespace DBInline.Interfaces
         public new IQuery Set(string text);
         public T Scalar<T>();
         public Task<T> ScalarAsync<T>();
-        public  IEnumerable<T> Select<T>(Func<IDataReader,T> transform);
-        public  IAsyncEnumerable<T> SelectAsync<T>(Func<IDataReader, T> transform);
+        public  IEnumerable<TOut> Select<TOut>(Func<IDataReader, TOut> transform);
+        public  IAsyncEnumerable<TOut> SelectAsync<TOut>(Func<IDataReader, TOut> transform);
     }
     
     
