@@ -259,6 +259,7 @@ namespace DBInline.Classes
             var res = ExecuteScalar();
             return res;
         }
+        
         public override int ExecuteNonQuery()
         {
             ClauseBuilder.BuildClauses(this);
@@ -270,7 +271,6 @@ namespace DBInline.Classes
             ClauseBuilder.BuildClauses(this);
             return DbCommand.ExecuteScalar();
         }
-
         
         public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
         {
