@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Net.Http.Headers;
 using DBInline.Classes;
 
 
@@ -9,6 +10,8 @@ namespace DBInline.Interfaces
     public class ClauseBuilder
     {
         private readonly List<string> _whereClauses = new List<string>();
+        
+        private  readonly List<string> _orClauses = new List<string>();
 
         public string CommandText { get; set; }
 
@@ -25,7 +28,12 @@ namespace DBInline.Interfaces
         private string _orderClause = "";
         private int _limit;
 
-        public void AddToWhereString(string whereClause)
+        public void AddWhere(string whereClause)
+        {
+            _whereClauses.Add(whereClause);
+        }
+        
+        public void AddOr(string whereClause)
         {
             _whereClauses.Add(whereClause);
         }
