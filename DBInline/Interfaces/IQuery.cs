@@ -18,7 +18,7 @@ namespace DBInline.Interfaces
         public T Scalar();
         public Task<T> ScalarAsync();
         public  IEnumerable<TOut> Select<TOut>(Func<IDataReader,TOut> transform);
-        public  IAsyncEnumerable<T> SelectAsync(Func<IDataReader, T> transform);
+        public  IAsyncEnumerable<TOut> SelectAsync<TOut>(Func<IDataReader, TOut> transform);
         public new IQuery<T> Set(string text);
         public IQueryBuilder Builder { get; }
         public DataTable Table();
