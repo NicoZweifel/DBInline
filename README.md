@@ -158,7 +158,7 @@ var t =PoolAsync(p => ...
 ```        
 - Or if an async lambda is necessary (for querying multiple different Databases at once.):            
 ```cs 
-return await Pool(async p =>
+return await PoolAsync(async p =>
             {
                 var asyncIe =  p.Query<string>()
                     .Set(ExampleQuery3)
@@ -166,13 +166,13 @@ return await Pool(async p =>
 
                 var res1 = p.Query<string>()
                     .Set(ExampleQuery1)
-                    .Param('Some parameter')
+                    .Param(Param1)
                     .AddRollback(() => { })
                     .ScalarAsync();
 
                 var res2 =await  p.Query<long>(Database2)
                     .Set(ExampleQuery2)
-                    .Param('Some parameter')
+                    .Param(Param2)
                     .ScalarAsync();
 
                 var json = "";
@@ -180,8 +180,9 @@ return await Pool(async p =>
                 {
                     json += obj;
                 }
-                return json.Any() + await res1 +  (res2 > 0);
-            }).ConfigureAwait(false); 
+
+                return json.Any() + await res + (await t2 > 0);
+            }).ConfigureAwait(false);
 ```
 
 # Tests
