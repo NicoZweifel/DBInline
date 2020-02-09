@@ -7,7 +7,7 @@
 # Summary
 
 - Collection of Classes/Interfaces/Extensions to quickly get transactions,
-  commands and also pool different Databases in one Connectionpool.
+  commands and also pool different Databases together.
   
 - Rollbacks/Disposing is handled in the background.
 
@@ -36,7 +36,7 @@
 # Async
 
 - Contains async versions for every method also async Lambda Pool versions,
-  so you can query different Databases at the same time and everything will be rollbacked if an exception occurs.
+  in case it's necessary to query different Databases at the same time with everything beeing rollbacked if an exception occurs.
 
 # Usage
 
@@ -94,7 +94,7 @@ return await TransactionAsync(t =>
             });
 ```
 
-# CMD/QueryRun Examples:
+# CMD/QueryRun Examples (these will probably be removed):
 ```cs
 return QueryRun<List<string>> ...
 ```
@@ -135,7 +135,7 @@ for (var counter = 1; counter< 10;counter++)
 {
     p.Query()
         .Set('Update/delete query')
-        .Param("DBID",10)
+        .Param("DBID",counter)
         .Where("DBID = @DBID")
         .AddRollback(() =>
         {
@@ -169,7 +169,7 @@ return Pool(p =>
 ```cs
 var t =PoolAsync(p => ...            
 ```        
-- Or if an async lambda is necessary (for querying multiple different Databases at once.):            
+- Or if you want to use an async lambda instead of adding tasks to a list (Querying multiple different Databases at once):         
 ```cs 
 return await PoolAsync(async p =>
             {

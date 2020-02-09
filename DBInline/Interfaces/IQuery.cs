@@ -11,7 +11,7 @@ namespace DBInline.Interfaces
 {
     
     
-    public interface IQuery<T> : ICommandBehaviour , ICommandBehaviour<IQuery<T>>,IWrapCommand 
+    public interface IQuery<T> : ICommandBuilder , ICommandBuilder<IQuery<T>>,IWrapCommand 
     {   
         public int Run();
         public Task<int> RunAsync();
@@ -29,7 +29,7 @@ namespace DBInline.Interfaces
         public Task<DbDataReader> ReaderAsync();
     }
 
-    public interface IQuery : ICommandBehaviour , ICommandBehaviour<IQuery>,IWrapCommand
+    public interface IQuery : ICommandBuilder , ICommandBuilder<IQuery>,IWrapCommand
     {
         public int Run();
         public Task<int> RunAsync();
@@ -48,7 +48,7 @@ namespace DBInline.Interfaces
     }
     
     
-    public interface IQueryBuilder : ICommandBehaviour<IQueryBuilder>,IWrapCommand
+    public interface IQueryBuilder : IClauseBuilder<IQueryBuilder>,IWrapCommand
     {
     }
     public interface IWrapCommand
