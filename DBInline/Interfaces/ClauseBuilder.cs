@@ -35,7 +35,7 @@ namespace DBInline.Interfaces
             if (CommandText.Trim().EndsWith(";"))
                 CommandText =
                     CommandText.Substring(0, CommandText.Length - 1);
-            var whereStr = _whereClauses.Any() ? $" WHERE {string.Join("", _whereClauses)}" : "";
+            var whereStr = _whereClauses.Any() ? $" WHERE {string.Join(" AND ", _whereClauses)}" : "";
             var orderStr = _orderClause.Length != 0 ? $"ORDER BY {_orderClause}" : "";
             var limitStr = _limit > 0 ? $" LIMIT {_limit}" : "";
             command.DbCommand.CommandText = $"{CommandText} {whereStr} {orderStr} {limitStr};";

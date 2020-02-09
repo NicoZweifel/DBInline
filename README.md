@@ -68,8 +68,8 @@ var t = Transaction(t =>
 {
    return t.Query<string>()
        .Set('Some query')
-       .Param('Some parameter')     //Add parameter
-       .Param("DBID",9)  //Or like this
+       .Param("name","John Doe")
+       .Where("name like @name")
        .AddRollback(() =>
        {
            Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
@@ -84,7 +84,9 @@ return await TransactionAsync(t =>
             {
                return t.Query<string>()
                     .Set('Some query')
-		    .Param('Some parameter')
+		                .Param("name","John Doe")
+                    .Where("name like @name")
+		                .limit(5)
                     .Select(r => (string) r[0]) //Create the objects
                     .ToList();
             });
