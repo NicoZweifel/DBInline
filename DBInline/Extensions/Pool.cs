@@ -151,13 +151,5 @@ namespace DBInline
         {
             return PoolAsync(null, body);
         }
-        /// <summary>
-        /// Groups Transactions.
-        /// </summary>
-        /// <param name="body">Execution body."></param>
-        public static  Task<T> PoolAsync<T>(Func<IPool, Task<T>> body)
-        {
-            return PoolAsync(null, body);
-        }
     }
 }
