@@ -14,7 +14,7 @@ namespace DBInline.Interfaces
         public  T Param(IDbDataParameter parameter);
         public  T Param(SimpleParameter parameter);
         public new T Parameters(IEnumerable<IDbDataParameter> paramArray);
-        public T Where(string clause);
+        public IOrBuilder<T> Where(string clause);
         public IOrBuilder<T> Where(string fieldName, object value);
         public T Order(string clause);
         public T Limit(int limit);

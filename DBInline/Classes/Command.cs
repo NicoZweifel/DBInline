@@ -100,7 +100,7 @@ namespace DBInline.Classes
             Parameters(paramArray);
             return this;
         }
-        Command<T> ICommandBuilder<Command<T>>.Where(string clause)
+        IOrBuilder<Command<T>> ICommandBuilder<Command<T>>.Where(string clause)
         {
             ClauseBuilder.AddWhere(clause);
             return this;
@@ -118,7 +118,7 @@ namespace DBInline.Classes
             return this;
         }
 
-        IQuery<T> ICommandBuilder<IQuery<T>>.Where(string clause)
+        IOrBuilder<IQuery<T>> ICommandBuilder<IQuery<T>>.Where(string clause)
         {
             ClauseBuilder.AddWhere(clause);
             return this;
@@ -397,7 +397,7 @@ namespace DBInline.Classes
         }
 
 
-        IQuery ICommandBuilder<IQuery>.Where(string whereString)
+        IOrBuilder<IQuery> ICommandBuilder<IQuery>.Where(string whereString)
         {
             ClauseBuilder.AddWhere(whereString);
             return this;
