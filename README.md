@@ -127,7 +127,7 @@ for (var counter = 1; counter< 10;counter++)
 {
     p.Query()
         .Set('Update/delete query')
-	    .Param('Some parameter')
+	.Param('Some parameter')
         .AddRollback(() => 'some C# rollback action')
         .Run(); //ExecuteNonQuery
 }
@@ -169,7 +169,7 @@ return await PoolAsync(async p =>
                     .AddRollback(() => { })
                     .ScalarAsync();
 
-                var res2 = await p.Query<long>(Database2)
+                var res2 =await  p.Query<long>(Database2)
                     .Set(ExampleQuery2)
                     .Param(Param2)
                     .ScalarAsync();
@@ -185,6 +185,6 @@ return await PoolAsync(async p =>
 
 # Tests
 
-- On separate Branch cause they are a mess.
+- On seperate Branch cause they are a mess.
 - DB Instance dependent and chaotic, see:[Improve Test Project](https://github.com/NicoZweifel/DBInline/issues/1)
 - Eventually there will be Tables generated and used in the tests.
