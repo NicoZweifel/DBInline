@@ -135,7 +135,7 @@ for (var counter = 1; counter< 10;counter++)
 {
     p.Query()
         .Set('Update/delete query')
-        .Param("DBID",10)
+        .Param("DBID",counter)
         .Where("DBID = @DBID")
         .AddRollback(() =>
         {
