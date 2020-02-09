@@ -69,8 +69,7 @@ var t = Transaction(t =>
    return t.Query<string>()
        .Set('Some query')
        .Param('Some parameter')     //Add parameter
-       .Param("DBID",9) //Or like this
-       .Param("DBID",10)
+       .Param("DBID",9)  //Or like this
        .AddRollback(() =>
        {
            Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
@@ -180,8 +179,7 @@ return await PoolAsync(async p =>
                 {
                     json += obj;
                 }
-
-                return json.Any() + await res + (await t2 > 0);
+                return json.Any() + await res1 + (res2 > 0);
             }).ConfigureAwait(false);
 ```
 

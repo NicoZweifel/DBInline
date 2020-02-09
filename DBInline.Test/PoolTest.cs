@@ -112,7 +112,7 @@ namespace DBInline.Test
         [Test(ExpectedResult = "True86True"), Order(3), NonParallelizable]
         public string PoolSyntaxTest()
         {
-            var t = PoolAsync<string>(async p =>
+            var t = PoolAsync(async p =>
             {
                 var asyncIe =  p.Query<string>()
                     .Set(ExampleQuery3)
