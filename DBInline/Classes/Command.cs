@@ -209,7 +209,6 @@ namespace DBInline.Classes
                 Database.Postgres => new Parameter(this, new NpgsqlParameter(name, value)),
                 Database.Mysql => new Parameter(this, new MySqlParameter(name, value)),
                 Database.SqlLite => new Parameter(this, new SqliteParameter(name, value)),
-                Database.ElasticSearch => throw new NotImplementedException(),
                 _ => new Parameter(DbCommand.CreateParameter())
             };
             Parameters.Add(param.DbParameter);
