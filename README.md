@@ -94,7 +94,7 @@ return await TransactionAsync(t =>
             });
 ```
 
-# CMD/QueryRun Examples:
+# CMD/QueryRun Examples (these will probably be removed):
 ```cs
 return QueryRun<List<string>> ...
 ```
