@@ -22,23 +22,19 @@ namespace DBInline.Classes
 {
     internal class Command<T> : Command, IQuery<T> , ICommandBehaviour<Command<T>>
     {
-
+        
+        private ClauseBuilder _builder = new ClauseBuilder();
+        
         public Command(string commandText, Transaction transaction) : base(commandText, transaction)
         {
         }
-
- 
+        
         public new IQuery<T> Set(string text)
         {
             CommandText = text;
             return this;
         }
-        public IQuery<T> Where(string whereString)
-        {
-            CommandText += $" WHERE {whereString}";
-            return this;
-        }
-        
+
         public T Scalar()
         {
             var res = ExecuteScalar();
@@ -126,7 +122,32 @@ namespace DBInline.Classes
             AddParameters(paramArray);
             return this;
         }
+        
+        Command<T> ICommandBehaviour<Command<T>>.Where(string whereString)
+        {
+            _builder.AddToWhereString(whereString);
+            return this;
+        }
 
+        IQuery<T> ICommandBehaviour<IQuery<T>>.Where(string whereString)
+        {
+            _builder.AddToWhereString(whereString);
+            return this;
+        }
+
+        Command<T> ICommandBehaviour<Command<T>>.Order(string orderClause)
+        {
+            _builder.SetOrderClause(orderClause);
+            return this;
+        }
+
+        IQuery<T> ICommandBehaviour<IQuery<T>>.Order(string orderClause)
+        {
+            _builder.SetOrderClause(orderClause);
+            return this;
+        }
+
+   
         Command<T> ICommandBehaviour<Command<T>>.AddRollback(Action action)
         {
             AddRollback(action);
@@ -155,6 +176,7 @@ namespace DBInline.Classes
         // ReSharper disable once MemberCanBePrivate.Global
         public new Transaction Transaction { get; }
 
+        private ClauseBuilder _builder = new ClauseBuilder();
         public Command(string commandText, Transaction transaction, bool isolated = true)
         {
             _isolated = isolated;
@@ -200,12 +222,6 @@ namespace DBInline.Classes
                 yield return transform(r);
             }
             await r.CloseAsync().ConfigureAwait(false);
-        }
-
-        public IQuery Where(string whereString)
-        {
-            CommandText += $" WHERE {whereString}";
-            return this;
         }
 
         // ReSharper disable once MemberCanBePrivate.Global
@@ -334,6 +350,31 @@ namespace DBInline.Classes
             return this;
         }
 
+        public IQueryBuilder Where(string whereClause)
+        {
+            _builder.AddToWhereString(whereClause);
+            return this;
+        }
+        
+        IQuery ICommandBehaviour<IQuery>.Where(string whereString)
+        {
+            _builder.AddToWhereString(whereString);
+            return this;
+        }
+
+        public IQueryBuilder Order(string orderClause)
+        {
+            _builder.SetOrderClause(orderClause);
+            return this;
+        }
+        
+        IQuery ICommandBehaviour<IQuery>.Order(string orderClause)
+        {
+            _builder.SetOrderClause(orderClause);
+            return this;
+        }
+
+
         IQuery ICommandBehaviour<IQuery>.Param(IDbDataParameter parameter)
         {
             CreateParameter(parameter.ParameterName,parameter.Value);
@@ -409,12 +450,7 @@ namespace DBInline.Classes
         }
 
         Command IWrapCommand.Command => this;
-
-        public Type ElementType => throw new NotImplementedException();
-
-        public Expression Expression => throw new NotImplementedException();
-
-        public IQueryProvider Provider => throw new NotImplementedException();
+        
 
         public Task<int> RunAsync()
         {
@@ -461,11 +497,6 @@ namespace DBInline.Classes
         public Task<DbDataReader> ReaderAsync()
         {
             return DbCommand.ExecuteReaderAsync(Token);
-        }
-
-        public IEnumerator GetEnumerator()
-        {
-            throw new NotImplementedException();
         }
     }
 }
