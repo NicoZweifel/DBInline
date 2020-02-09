@@ -161,15 +161,13 @@ var t = Transaction(t => ...
 ```
 - Or:
 ```cs
-var tsk = TransactionAsync(t =>
+return await TransactionAsync(t =>
             {
                return t.Query<string>()
                     .Set('Some query')
                     .Select(r => (string) r[0]) //Create the objects
                     .ToList();
             });
-            tsk.Wait();
-            return tsk.Result;
 ```
 
 # Tests
