@@ -43,7 +43,7 @@ namespace DBInline.Test
                     .ToList())
                     .Any();
         }
-        [Test(ExpectedResult = 5156572898), Order(9)]
+        [Test(ExpectedResult = 5158976131), Order(9)]
         public long CmdScalarTest()
         {
             // ReSharper disable once AssignmentIsFullyDiscarded
@@ -54,7 +54,7 @@ namespace DBInline.Test
                 .Scalar());
         }
       
-        [Test(ExpectedResult = 5156572898), Order(13)]
+        [Test(ExpectedResult = 5158976131), Order(13)]
         public long ChainTest()
         {
             return Pool(s => s.Query<long>(Database2)

@@ -13,7 +13,7 @@ namespace DBInline.Test
         /// First Query is slow.
         /// </summary>
         /// <returns></returns>
-        [Test(ExpectedResult = "86_5156572898_True"), Order(0), NonParallelizable]
+        [Test(ExpectedResult = "86_86_5158976131_True"), Order(0), NonParallelizable]
         public string FirstPool()
         {
             using var p = Pool();
@@ -28,15 +28,21 @@ namespace DBInline.Test
                 .Param(Param1)
                 .Scalar();
 
-            var res2 = p.Query<long>(Database2)
+            var res2 = p.Query<string>()
+                .Set(ExampleQuery1WoClause)
+                .Where("name = \'86\'")
+                .Limit(1)
+                .Param(Param1)
+                .Scalar();
+            
+            var res3 = p.Query<long>(Database2)
                 .Set(ExampleQuery2)
                 .Param(Param2.Name, Param2.Value)
                 .Scalar();
 
             p.Commit();
             
-            return $"{res1}_" +
-                   $"{res2}_{values.Any()}";
+            return $"{res1}_{res2}_{res3}_{values.Any()}";
         }
 
         [Test(ExpectedResult = true), Order(1), NonParallelizable]
@@ -140,7 +146,7 @@ namespace DBInline.Test
             return t.Result;
         }
 
-        [Test(ExpectedResult = "86_5_5156572898"), Order(4), NonParallelizable]
+        [Test(ExpectedResult = "86_5_5158976131"), Order(4), NonParallelizable]
         public string PoolTestRollback()
         {
             var rollbackTest = 1;
@@ -189,7 +195,7 @@ namespace DBInline.Test
             });
         }
 
-        [Test(ExpectedResult = "86_3_5156572898"), Order(5), NonParallelizable]
+        [Test(ExpectedResult = "86_3_5158976131"), Order(5), NonParallelizable]
         public string PoolTestRollbackAsync()
         {
             var rollbackTest = 1;

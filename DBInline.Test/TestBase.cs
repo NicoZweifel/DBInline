@@ -39,6 +39,7 @@ namespace DBInline.Test
         /// Simple Select Test query, First Result should be string. Tests check for "86"
         /// </summary>
         protected const string ExampleQuery1 = "INSERT INTO test(name)VALUES('86'); SELECT name FROM test WHERE name = \'86\' limit 1;";
+        protected const string ExampleQuery1WoClause = "INSERT INTO test(name)VALUES('86'); SELECT name FROM test;";
         protected readonly SimpleParameter Param1 =new SimpleParameter("@name", "86");
 
         /// <summary>
@@ -46,7 +47,7 @@ namespace DBInline.Test
         /// For testing run on separate Database-Server Tests check for long: 5155081264.
         /// </summary>
         protected const string ExampleQuery2 = "INSERT INTO [BigDota].[dbo].[test](name)VALUES('86') SELECT TOP 1 * FROM [BigDota].[dbo].[MatchDetails] WHERE MatchID = @id;";
-        protected readonly SimpleParameter Param2 =new SimpleParameter("@id", 5156572898);
+        protected readonly SimpleParameter Param2 =new SimpleParameter("@id", 5158976131);
         protected const string Database2 = "MsSql"; // 2nd database
 
 

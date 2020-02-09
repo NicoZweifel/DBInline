@@ -15,6 +15,7 @@ namespace DBInline.Interfaces
         public new T AddParameters(IEnumerable<IDbDataParameter> paramArray);
         public T Where(string whereClause);
         public T Order(string orderClause);
+        public T Limit(int limit);
     }
     public interface ICommandBehaviour : IAddRollBack, IAddParameter
     {
