@@ -143,20 +143,6 @@ namespace DBInline.Test
         [Test(ExpectedResult = "86_5_5156572898"), Order(4), NonParallelizable]
         public string PoolTestRollback()
         {
-            var t = Transaction(t =>
-            {
-                return t.Query<string>()
-                    .Set('Some query')
-                    .Param('Some parameter')     //Add parameter
-                    .Param("DBID",9)  //Or like this
-                    .AddRollback(() =>
-                    {
-                        Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
-                    })
-                    .Select(r => (string) r[0]) //Create the objects
-                    .ToList();
-            });
-            
             var rollbackTest = 1;
             try
             {
