@@ -14,7 +14,7 @@ namespace DBInline.Test
         {
             using var p = Pool();
 
-            var list = p.Query<string>()
+            var list = p.Query()
                 .Set(SelectQuery)
                 .Select(x=>(string)x[1])
                 .ToList();

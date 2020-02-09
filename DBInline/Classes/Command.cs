@@ -181,7 +181,7 @@ namespace DBInline.Classes
         // ReSharper disable once MemberCanBePrivate.Global
         public new Transaction Transaction { get; }
 
-        protected readonly ClauseBuilder ClauseBuilder = new ClauseBuilder();
+        internal readonly ClauseBuilder ClauseBuilder = new ClauseBuilder();
         public Command(string commandText, Transaction transaction, bool isolated = true)
         {
             _isolated = isolated;

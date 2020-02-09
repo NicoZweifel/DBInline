@@ -7,7 +7,7 @@ using DBInline.Classes;
 
 namespace DBInline.Interfaces
 {
-    public class ClauseBuilder
+    internal class ClauseBuilder
     {
         private readonly List<string> _whereClauses = new List<string>();
 
