@@ -40,7 +40,6 @@ namespace DBInline.Classes
                 Database.Postgres => new NpgsqlParameter(_param.name, _param.value),
                 Database.Mysql => new MySqlParameter(_param.name, _param.value),
                 Database.SqlLite => new SqliteParameter(_param.name, _param.value),
-                Database.ElasticSearch => throw new NotImplementedException(),
                 _ => throw new NotImplementedException("Database not recognized.")
             };
         }
