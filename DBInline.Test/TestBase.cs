@@ -50,6 +50,12 @@ namespace DBInline.Test
         /// </summary>
         protected const string SelectQuery = "SELECT * FROM \"dbinline_generated_table\";";
         
+                
+        /// <summary>
+        /// Deletes content in Table.
+        /// </summary>
+        protected const string DeleteQuery = "DELETE FROM \"dbinline_generated_table\";";
+        
         /// <summary>
         /// Drops test Table.
         /// </summary>

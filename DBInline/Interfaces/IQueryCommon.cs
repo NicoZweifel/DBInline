@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
@@ -15,5 +17,8 @@ namespace DBInline.Interfaces
         public Task<DataSet> DataSetAsync();
         public DbDataReader Reader();
         public Task<DbDataReader> ReaderAsync();
+        public IEnumerable<TOut> Select<TOut>(Func<IDataReader, TOut> transform);
+        public Task<List<TOut>> SelectAsync<TOut>(Func<IDataReader, TOut> transform);
+        public IAsyncEnumerable<TOut> SelectAsyncEnumerable<TOut>(Func<IDataReader, TOut> transform);
     }
 }

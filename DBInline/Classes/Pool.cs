@@ -69,19 +69,27 @@ namespace DBInline.Classes
         }
 
         void IPool.Rollback()
-        {  
+        {
             var exceptions = new List<Exception>();
-            foreach (var command in _commands)
+            try
             {
-                try
+                foreach (var command in _commands)
                 {
-                    command.Cancel();
-                }
-                catch (Exception ex)
-                {
-                    exceptions.Add(ex);
+                    try
+                    {
+                        command.Cancel();
+                    }
+                    catch (Exception ex)
+                    {
+                        exceptions.Add(ex);
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                exceptions.Add(ex);
+            }
+
             try
             {
                 TokenSource.Cancel();
@@ -91,34 +99,51 @@ namespace DBInline.Classes
                 exceptions.Add(ex);
             }
 
-            foreach (var transaction in _transactions)
+            try
             {
-                try
+                foreach (var transaction in _transactions)
                 {
-                    transaction.Value.Rollback();
-                }
-                catch(Exception ex)
-                {
-                    exceptions.Add(ex);
+                    try
+                    {
+                        transaction.Value.Rollback();
+                    }
+                    catch (Exception ex)
+                    {
+                        exceptions.Add(ex);
+                    }
                 }
             }
-            foreach (var rollbackAction in _rollbackActions.Union(_wrappedTransactions.SelectMany(t=> t.RollbackActions)))
+            catch (Exception ex)
             {
-                try
+                exceptions.Add(ex);
+            }
+
+            try
+            {
+                foreach (var rollbackAction in _rollbackActions
+                    .Union(_wrappedTransactions.SelectMany(t => t.RollbackActions))
+                    .ToList())
                 {
-                    rollbackAction.DynamicInvoke();
+                    try
+                    {
+                        rollbackAction.DynamicInvoke();
+                    }
+                    catch (Exception ex)
+                    {
+                        exceptions.Add(ex);
+                    }
                 }
-                catch(Exception ex)
+                if (exceptions.Any())
                 {
-                    exceptions.Add(ex);
+                    throw new AggregateException("A Rollback Action in the pool has failed!", exceptions);
                 }
             }
-            if (exceptions.Any())
+            catch (Exception ex)
             {
-                throw new AggregateException("A Rollback Action in the pool has failed!",exceptions);
+                exceptions.Add(ex);
             }
         }
-        
+
         public void Dispose()
         {
             ((IPool)this).Rollback();

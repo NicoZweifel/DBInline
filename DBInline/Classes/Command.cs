@@ -39,31 +39,7 @@ namespace DBInline.Classes
 
             return (T) res;
         }
-
-        public IEnumerable<T> Select(Func<IDataReader, T> transform)
-        {
-            ClauseBuilder.BuildClauses(this);
-            using var r = ExecuteReader();
-            while (r.Read())
-            {
-                yield return transform(r);
-            }
-
-            r.Close();
-        }
-
-        public async IAsyncEnumerable<T> SelectAsync(Func<IDataReader, T> transform)
-        {
-            ClauseBuilder.BuildClauses(this);
-            await using var r = ExecuteReader();
-            while (await r.ReadAsync())
-            {
-                yield return transform(r);
-            }
-
-            await r.CloseAsync().ConfigureAwait(false);
-        }
-
+        
         IQuery<T> IQuery<T>.Set(string text)
         {
             ClauseBuilder.CommandText = text;
@@ -287,11 +263,22 @@ namespace DBInline.Classes
             {
                 yield return transform(r);
             }
-
             r.Close();
         }
 
-        public async IAsyncEnumerable<TOut> SelectAsync<TOut>(Func<IDataReader, TOut> transform)
+        public async Task<List<TOut>> SelectAsync<TOut>(Func<IDataReader, TOut> transform)
+        {
+            var res = new List<TOut>();
+            await using var r = await ExecuteReaderAsync(Token);
+            while (r.Read())
+            {
+                res.Add(transform(r));
+            }
+            r.Close();
+            return res;
+        }
+
+        public async IAsyncEnumerable<TOut> SelectAsyncEnumerable<TOut>(Func<IDataReader, TOut> transform)
         {
             ClauseBuilder.BuildClauses(this);
             await using var r = await ExecuteReaderAsync(Token);

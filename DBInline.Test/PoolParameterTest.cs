@@ -16,7 +16,7 @@ namespace DBInline.Test
 
             var list = p.Query()
                 .Set(SelectQuery)
-                .Select(x => (string)x[1])
+                .Select(x => (string) x[1])
                 .ToList();
 
             Assert.IsTrue(list.Count == 5, "Count should be 5.");
@@ -25,7 +25,7 @@ namespace DBInline.Test
                 .Set(SelectQuery)
                 .Where("name", "John Doe")
                 .Or("name", "James Smith")
-                .Select(x => (string)x[1])
+                .Select(x => (string) x[1])
                 .ToList();
 
             Assert.IsTrue(johnJames.Count == 2, "Count should be 2.");
@@ -52,27 +52,26 @@ namespace DBInline.Test
 
                 await foreach (var x in p.Query()
                     .Set(SelectQuery)
-                    .SelectAsync(x => (string)x[1]))
-                { list.Add(x); }
+                    .SelectAsyncEnumerable(x => (string) x[1]))
+                {
+                    list.Add(x);
+                }
 
                 Assert.IsTrue(list.Count == 5, "Count should be 5.");
 
 
-                var johnJames = new List<string>();
-
-                await foreach (var x in p.Query()
+                var johnJames = (await p.Query()
                     .Set(SelectQuery)
                     .Where("name", "John Doe")
                     .Or("name", "James Smith")
-                    .SelectAsync(x => (string)x[1]))
-                { johnJames.Add(x); }
-
+                    .SelectAsync(x => (string) x[1])
+                    .ConfigureAwait(false)).ToList();
 
                 Assert.IsTrue(johnJames.Count == 2, "Count should be 2.");
                 Assert.IsTrue(johnJames.Contains("James Smith"), "Name missing.");
                 Assert.IsTrue(johnJames.Contains("John Doe"), "Name missing.");
 
-                var peter =await p.Query<string>()
+                var peter = await p.Query<string>()
                     .Set(SelectQuery)
                     .ScalarAsync()
                     .ConfigureAwait(false);

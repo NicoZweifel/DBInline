@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using NUnit.Framework;
 using static DBInline.Extensions;
 
@@ -10,12 +8,12 @@ namespace DBInline.Test
     public class DropCreateTest : TestBase
     {
         // Using Multiple Pools to check if everything is persistent.
-        [Test, NonParallelizable]
+        [Test, NonParallelizable,Order(0)]
         public void DropCreate()
         {
             using var p = Pool();
 
-            var delCount = p.Query()
+            p.Query()
                 .Set(DropQuery)
                 .Run();
 

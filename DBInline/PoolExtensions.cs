@@ -9,7 +9,7 @@ namespace DBInline
     public static partial class Extensions
     {
         /// <summary>
-        /// Groups Transactions.
+        /// Groups Transactions/Connections./Connections.
         /// </summary>
         /// <param name="this">Connection Source</param>
         /// <param name="body">Execution body.</param>
@@ -22,14 +22,14 @@ namespace DBInline
             });
         }
         /// <summary>
-        /// Groups Transactions.
+        /// Groups Transactions/Connections./Connections.
         /// </summary>
         public static IPool Pool()
         {
             return new Pool();
         }
         /// <summary>
-        /// Groups Transactions.
+        /// Groups Transactions/Connections./Connections.
         /// </summary>
         /// <param name="body">Execution body."></param>
         public static void Pool(Action<IPool> body)
@@ -42,7 +42,7 @@ namespace DBInline
         }
 
         /// <summary>
-        /// Groups Transactions.
+        /// Groups Transactions/Connections./Connections.
         /// </summary>
         /// <param name="this">Connection Source</param>
         /// <param name="body">Execution body.</param>
@@ -60,15 +60,12 @@ namespace DBInline
                 {
                     throw new AggregateException("Failed to run Pool.", ex);
                 }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
         }
 
         /// <summary>
-        /// Groups Transactions.
+        /// Groups Transactions/Connections.
         /// </summary>
         /// <param name="body">Execution body."></param>
         public static T Pool<T>(Func<IPool, T> body)
@@ -77,7 +74,7 @@ namespace DBInline
         }
 
         /// <summary>
-        /// Groups Transactions.
+        /// Groups Transactions/Connections.
         /// </summary>
         /// <param name="this">Connection Source</param>
         /// <param name="body">Execution body.</param>
@@ -102,16 +99,13 @@ namespace DBInline
                     {
                         throw new AggregateException("Failed to run Pool.", ex);
                     }
-                    else
-                    {
-                        throw;
-                    }
+                    throw;
                 }
             }, token);
         }
 
         /// <summary>
-        /// Groups Transactions.
+        /// Groups Transactions/Connections.
         /// </summary>
         /// <param name="this">Connection Source</param>
         /// <param name="body">Execution body.</param>
@@ -136,15 +130,12 @@ namespace DBInline
                     {
                         throw new AggregateException("Failed to run Pool.", ex);
                     }
-                    else
-                    {
-                        throw;
-                    }
+                    throw;
                 }
             }, token);
         }
         /// <summary>
-        /// Groups Transactions.
+        /// Groups Transactions/Connections.
         /// </summary>
         /// <param name="body">Execution body."></param>
         public static Task<T> PoolAsync<T>(Func<IPool, T> body)
@@ -152,12 +143,25 @@ namespace DBInline
             return PoolAsync(null, body);
         }
         /// <summary>
-        /// Groups Transactions.
+        /// Groups Transactions/Connections.
         /// </summary>
         /// <param name="body">Execution body."></param>
         public static Task<T> PoolAsync<T>(Func<IPool, Task<T>> body)
         {
             return PoolAsync(null, body);
+        }
+        
+        /// <summary>
+        /// Groups Transactions/Connections.
+        /// </summary>
+        /// <param name="body">Execution body."></param>
+        public static async Task PoolAsync(Action<IPool> body)
+        {
+            await PoolAsync(null, p=>
+            {
+                body(p);
+                return 0;
+            }).ConfigureAwait(false);
         }
     }
 }
