@@ -113,13 +113,14 @@ return await QueryAsync<List<string>>('Some query', cmd =>
 using var p = Pool(); 
 var i = p.Query()
     .Set('Some update/delete query')
-    .Param('Some parameter')
+    .Param("DBID",10)
+    .Where("DBID = @DBID")
     .AddRollback(() => 'some C# rollback action')
     .Run(); //ExecuteNonQuery
 
 var res1 = !p.Query()
     .Set('Some select query')
-    .Param('Some parameter')
+    .limit(10)
     .Select(r => (string)r[0]) //create desired object.
     .ToList();
 
@@ -127,14 +128,16 @@ for (var counter = 1; counter< 10;counter++)
 {
     p.Query()
         .Set('Update/delete query')
-	.Param('Some parameter')
+        .Param("DBID",10)
+        .Where("DBID = @DBID")
         .AddRollback(() => 'some C# rollback action')
         .Run(); //ExecuteNonQuery
 }
 
 var res2 = p.Query<long>(Database2) //Query another Database
     .Set('Some query')
-    .Param('param Name', 'param value') //Add parameter with name and value
+    .Param("param", "value") //Add parameter with name and value
+    .Where("name = @param")
     .Scalar(); //ExecuteScalar
 
 p.Commit();  //With the using statement in place, if this is not called everything will be rollbacked.
@@ -145,7 +148,8 @@ return Pool(p =>
     {
         var res1 = p.Query<DataTable>()
             .Set('Some select query')
-            .Param('Some parameter') 
+            .Param("DBID",10)
+            .Where("DBID = @DBID")
             .Table(); //Select as Datatable
         return res1;
     });
@@ -161,17 +165,20 @@ return await PoolAsync(async p =>
             {
                 var asyncIe =  p.Query<string>()
                     .Set(ExampleQuery3)
+                    .limit(10)
                     .SelectAsync(r=> (string)r[0]);
 
                 var res1 = p.Query<string>()
                     .Set(ExampleQuery1)
-                    .Param(Param1)
+                    .Param("name","John Doe")
+                    .Where("name like @name")
                     .AddRollback(() => { })
                     .ScalarAsync();
 
                 var res2 =await  p.Query<long>(Database2)
                     .Set(ExampleQuery2)
-                    .Param(Param2)
+                    .Param("name","John Doe")
+                    .Where("name like @name")
                     .ScalarAsync();
 
                 var json = "";

@@ -24,13 +24,14 @@ namespace DBInline.Test
                 .ToList();
 
             var res1 = p.Query<string>()
-                .Set(ExampleQuery1)
-                .Param(Param1)
+                .Set(ExampleQuery1WoClause)
+                .Param("name","86")
+                .Where("name = @name")
                 .Scalar();
 
             var res2 = p.Query<string>()
                 .Set(ExampleQuery1WoClause)
-                .Where("name = \'86\'")
+                .Where("name = @name")
                 .Limit(1)
                 .Param(Param1)
                 .Scalar();
