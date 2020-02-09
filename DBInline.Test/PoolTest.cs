@@ -110,21 +110,21 @@ namespace DBInline.Test
         }
         
         [Test(ExpectedResult = "True86True"), Order(3), NonParallelizable]
-        public async Task<string> PoolSyntaxTest()
+        public  string PoolSyntaxTest()
         {
-           return await Pool(async p =>
+           var t =  Pool(async p =>
             {
                 var asyncIe =  p.Query<string>()
                     .Set(ExampleQuery3)
                     .SelectAsync(r=> (string)r[0]);
 
-                var res = p.Query<string>()
+                var res1 = p.Query<string>()
                     .Set(ExampleQuery1)
                     .Param(Param1)
                     .AddRollback(() => { })
                     .ScalarAsync();
 
-                var t2 = p.Query<long>(Database2)
+                var res2 =await  p.Query<long>(Database2)
                     .Set(ExampleQuery2)
                     .Param(Param2)
                     .ScalarAsync();
@@ -134,13 +134,29 @@ namespace DBInline.Test
                 {
                     json += obj;
                 }
-                return json.Any() + await res + (await t2 > 0);
-            }); 
+                return json.Any() + await res1 +  (res2 > 0);
+            });
+           t.Wait();
+           return t.Result;
         }
 
         [Test(ExpectedResult = "86_5_5156572898"), Order(4), NonParallelizable]
         public string PoolTestRollback()
         {
+            var t = Transaction(t =>
+            {
+                return t.Query<string>()
+                    .Set('Some query')
+                    .Param('Some parameter')     //Add parameter
+                    .Param("DBID",9)  //Or like this
+                    .AddRollback(() =>
+                    {
+                        Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
+                    })
+                    .Select(r => (string) r[0]) //Create the objects
+                    .ToList();
+            });
+            
             var rollbackTest = 1;
             try
             {

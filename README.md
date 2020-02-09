@@ -61,79 +61,33 @@
  using static DBInline.Extensions;
  ```
 
-# Pool Examples
 
+# Transaction Examples:
 ```cs
-using var p = Pool(); 
-var i = p.Query()
-    .Set('Some update/delete query')
-    .Param('Some parameter') //Multiple options to add parameters
-    .AddRollback(() => 'some C# rollback action')
-    .Run(); //ExecuteNonQuery
-
-var res1 = !p.Query()
-    .Set('Some select query')
-    .Select(r => (string)r[0]) //create desired object.
-    .ToList();
-
-for (var counter = 1; counter< 10;counter++)
+var t = Transaction(t =>
 {
-    p.Query()
-        .Set('Update/delete query')
-        .AddRollback(() => 'some C# rollback action')
-        .Run(); //ExecuteNonQuery
-}
-
-var res2 = p.Query<long>(Database2) //Query another Database
-    .Set('Some query')
-    .Param('param Name', 'param value') //Add parameter with name and value
-    .Scalar(); //ExecuteScalar
-
-p.Commit();  //With the using statement in place, if this is not called everything will be rollbacked.
-```
-# Pool lambda Examples:
-```cs
-return Pool(p =>
-    {
-        var res1 = p.Query<DataTable>()
-            .Set('Some select query')
-            .Param('Some parameter') //param with SimpleParameter class can also be called with (name,value).
-            .Table(); //Select as Datatable
-        return res1;
-    });
-}          
+   return t.Query<string>()
+       .Set('Some query')
+       .Param('Some parameter')     //Add parameter
+       .Param("DBID",9)  //Or like this
+       .AddRollback(() =>
+       {
+           Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
+       })
+       .Select(r => (string) r[0]) //Create the objects
+       .ToList();
+});
 ```
 - Or:
 ```cs
-var t =PoolAsync(p => ...            
-```        
-- Or if an async lambda is necessary (for querying multiple different Databases at once.):            
-```cs 
-return await PoolAsync(async p =>
+return await TransactionAsync(t =>
             {
-                var asyncIe =  p.Query<string>() 
+               return t.Query<string>()
                     .Set('Some query')
-                    .SelectAsync(r=> (string)r[0]); //Select AsyncIenumerable.
-
-                var res1 = "";
-
-                await foreach(var obj in asyncIe) //AsyncIenumerable
-                {
-                    res1 += obj;
-                }
-
-                var res2 = p.Query<string>()
-                    .Set('Some query')
-                    .Param('Some parameter')
-                    .AddRollback(() => { })
-                    .ScalarAsync();
-
-                var table = p.Query<string>()
-                    .Set("")
-                    .TableAsync('Some select query'); //Select as DataTable
-                    
-                return res1 + await res2 + (await table).ToJson();
-            }).ConfigureAwait(false);
+		    .Param('Some parameter')
+                    .Select(r => (string) r[0]) //Create the objects
+                    .ToList();
+            });
 ```
 
 # CMD/QueryRun Examples:
@@ -153,19 +107,80 @@ return await QueryAsync<List<string>>('Some query', cmd =>
 
 ```
 
-# Transaction Examples:
+# Pool Examples
+
 ```cs
-var t = Transaction(t => ...
+using var p = Pool(); 
+var i = p.Query()
+    .Set('Some update/delete query')
+    .Param('Some parameter')
+    .AddRollback(() => 'some C# rollback action')
+    .Run(); //ExecuteNonQuery
+
+var res1 = !p.Query()
+    .Set('Some select query')
+    .Param('Some parameter')
+    .Select(r => (string)r[0]) //create desired object.
+    .ToList();
+
+for (var counter = 1; counter< 10;counter++)
+{
+    p.Query()
+        .Set('Update/delete query')
+	.Param('Some parameter')
+        .AddRollback(() => 'some C# rollback action')
+        .Run(); //ExecuteNonQuery
+}
+
+var res2 = p.Query<long>(Database2) //Query another Database
+    .Set('Some query')
+    .Param('param Name', 'param value') //Add parameter with name and value
+    .Scalar(); //ExecuteScalar
+
+p.Commit();  //With the using statement in place, if this is not called everything will be rollbacked.
+```
+# Pool lambda Examples:
+```cs
+return Pool(p =>
+    {
+        var res1 = p.Query<DataTable>()
+            .Set('Some select query')
+            .Param('Some parameter') 
+            .Table(); //Select as Datatable
+        return res1;
+    });
+}          
 ```
 - Or:
 ```cs
-return await TransactionAsync(t =>
+var t =PoolAsync(p => ...            
+```        
+- Or if an async lambda is necessary (for querying multiple different Databases at once.):            
+```cs 
+return await Pool(async p =>
             {
-               return t.Query<string>()
-                    .Set('Some query')
-                    .Select(r => (string) r[0]) //Create the objects
-                    .ToList();
-            });
+                var asyncIe =  p.Query<string>()
+                    .Set(ExampleQuery3)
+                    .SelectAsync(r=> (string)r[0]);
+
+                var res1 = p.Query<string>()
+                    .Set(ExampleQuery1)
+                    .Param('Some parameter')
+                    .AddRollback(() => { })
+                    .ScalarAsync();
+
+                var res2 =await  p.Query<long>(Database2)
+                    .Set(ExampleQuery2)
+                    .Param('Some parameter')
+                    .ScalarAsync();
+
+                var json = "";
+                await foreach(var obj in asyncIe)
+                {
+                    json += obj;
+                }
+                return json.Any() + await res1 +  (res2 > 0);
+            }).ConfigureAwait(false); 
 ```
 
 # Tests
