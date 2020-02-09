@@ -118,7 +118,7 @@ var t = PoolAsync(async p =>
                 var res1 = "";
                     await foreach(var obj in asyncIe) //AsyncIenumerable
                     {
-                        json += obj;
+                        res1 += obj;
                     }
 
                 var res2 = p.Query<string>()
@@ -132,7 +132,7 @@ var t = PoolAsync(async p =>
                         .TableAsync()) //Select as DataTable
                         .ToJson(); //Create Json from Table
 
-                return res1 + await res + (await t2 > 0);
+                return res1 + await res2 + table;
             });
             t.Wait();
             return t.Result;
