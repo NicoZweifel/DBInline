@@ -70,6 +70,8 @@ var t = Transaction(t =>
        .Set('Some query')
        .Param("name","John Doe")
        .Where("name like @name")
+       .Where("DBID > 1000")
+       .Limit(5)
        .AddRollback(() =>
        {
            Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
@@ -84,9 +86,9 @@ return await TransactionAsync(t =>
             {
                return t.Query<string>()
                     .Set('Some query')
-		    .Param("name","John Doe")
+                    .Param("name","John Doe")
                     .Where("name like @name")
-		    .limit(5)
+                    .Limit(5)
                     .Select(r => (string) r[0]) //Create the objects
                     .ToList();
             });
@@ -117,7 +119,10 @@ var i = p.Query()
     .Set('Some update/delete query')
     .Param("DBID",10)
     .Where("DBID = @DBID")
-    .AddRollback(() => 'some C# rollback action')
+    .AddRollback(() =>
+    {
+       Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
+    })
     .Run(); //ExecuteNonQuery
 
 var res1 = !p.Query()
@@ -132,7 +137,10 @@ for (var counter = 1; counter< 10;counter++)
         .Set('Update/delete query')
         .Param("DBID",10)
         .Where("DBID = @DBID")
-        .AddRollback(() => 'some C# rollback action')
+        .AddRollback(() =>
+        {
+            Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
+        })
         .Run(); //ExecuteNonQuery
 }
 
@@ -174,7 +182,10 @@ return await PoolAsync(async p =>
                     .Set(ExampleQuery1)
                     .Param("name","John Doe")
                     .Where("name like @name")
-                    .AddRollback(() => { })
+                    .AddRollback(() =>
+                    {
+                        Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
+                    })
                     .ScalarAsync();
 
                 var res2 =await  p.Query<long>(Database2)
