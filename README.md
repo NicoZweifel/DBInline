@@ -7,7 +7,7 @@
 # Summary
 
 - Collection of Classes/Interfaces/Extensions to quickly get transactions,
-  commands and also pool different Databases in one Connectionpool.
+  commands and also pool different Databases together.
   
 - Rollbacks/Disposing is handled in the background.
 
