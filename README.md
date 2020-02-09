@@ -132,7 +132,7 @@ return await QueryAsync<List<string>>('Some query', cmd =>
             {
                 {
                     return cmd
-                        .Select(r=>(string)r[0])
+                        .Select(r=>(string)r[0]) //Create the objects
                         .ToList();
                 }
             });
@@ -149,7 +149,7 @@ var tsk = TransactionAsync(t =>
             {
                return t.Query<string>()
                     .Set('Some query')
-                    .Select(r => (string) r[0])
+                    .Select(r => (string) r[0]) //Create the objects
                     .ToList();
             });
             tsk.Wait();
