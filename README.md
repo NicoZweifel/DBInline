@@ -169,7 +169,7 @@ return Pool(p =>
 ```cs
 var t =PoolAsync(p => ...            
 ```        
-- Or if an async lambda is necessary (for querying multiple different Databases at once.):            
+- Or if you want to use an async lambda instead of adding tasks to a list (Querying multiple different Databases at once.):         
 ```cs 
 return await PoolAsync(async p =>
             {
