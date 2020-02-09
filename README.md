@@ -109,17 +109,17 @@ var t =PoolAsync(p => ...
 ```        
 - Or if an async lambda is necessary (for querying multiple different Databases at once.):            
 ```cs 
-var t = PoolAsync(async p =>
+return await PoolAsync(async p =>
             {
                 var asyncIe =  p.Query<string>() 
                     .Set('Some query')
                     .SelectAsync(r=> (string)r[0]); //Select AsyncIenumerable.
 
                 var res1 = "";
-                    await foreach(var obj in asyncIe) //AsyncIenumerable
-                    {
-                        res1 += obj;
-                    }
+                await foreach(var obj in asyncIe) //AsyncIenumerable
+                {
+                    res1 += obj;
+                }
 
                 var res2 = p.Query<string>()
                     .Set('Some query')
@@ -127,15 +127,13 @@ var t = PoolAsync(async p =>
                     .AddRollback(() => { })
                     .ScalarAsync();
 
-                var table = (await p.Query<string>()
-                        .Set('Some select query')
-                        .TableAsync()) //Select as DataTable
-                        .ToJson(); //Create Json from Table
+                var table = p.Query<string>()
+                    .Set("")
+                    .TableAsync(); //Select as DataTable
+ 
 
-                return res1 + await res2 + table;
-            });
-            t.Wait();
-            return t.Result;
+                return res1 + await res2 + (await table).ToJson();
+            }).ConfigureAwait(false);
 ```
 
 # CMD/QueryRun Examples:
