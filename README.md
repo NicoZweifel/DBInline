@@ -1,7 +1,7 @@
 # DBInline 1.0.0-alpha
 
 Work in Progress, currently all Tests pass.
-Alpha Release Version. Should not be used in Production just yet.
+Alpha Release Version. Should not be used in Production.
 
 # Summary
 
@@ -9,13 +9,15 @@ Collection of Classes/Interfaces/Extensions to quickly get transactions,
 commands and also pool different Databases in one Connectionpool.
 Rollbacks/Disposing is handled in the background.
 
-Commits,Rollbacks all transactions/connections of multiple databases created in the Pool together.
+Commits, Rollbacks all transactions/connections of multiple databases are created and pooled together.
 
 Will rollback if an exception occurs or if you are using the Pool class and forget to call Commit().
 The Lambda version does not need the Commit call, but you have to pass a lambda instead.
 
-There is also extensions to just quicky get a transaction or a commands.
-The Transaction rollbacks if anything crashes.
+There is also extensions to quickly get a transaction or command going.
+
+The Transactions rollback in the Pool.Dispose() method if an unhandled exception occurs.
+The Lambda version handles the transactions and connections after the lambda execution fails/completes.
 
 # DatabaseContext
 
@@ -35,18 +37,27 @@ so you can query different Databases at the same time and everything will be rol
 
 It is not forbidden to nest pools, some tests passed, but it is not intended/supported and may yield unexpected results.
 
-There is a lot of options on how to select/transform options,
+There is a lot of options on how to selec objects (Datatset,Datatable,Reader etc...),
 which makes the api a little unintuitive in some places, since there is too many options at the moment.
 
-Some of them might be removed for clearer Usage.
+Some of them might be removed for clearer Usage and improved generic type inference.
 
 Since everything is connected through interfaces, all these methods can be mixed,
 it all comes down to a QueryBuilder and ConnectionSource Interfaces
 
-#using Pool Examples
+# Using Pool
 
-Don't forget to use using on this variant, or ur pool will not be rollbacked/disposed/handled properly.
-If you prefer using lambdas use the Extension functions
+Don't forget to use using ```cs var p = new Pool()``` on this variant, or ur pool will not be rollbacked/disposed/handled properly.
+If using lambdas is preferred, there static functions that tale a lambda for everything.
+
+These have to be statically imported.
+ E.g.: 
+ ```cs
+ using static DBInline.Extensions;
+ ```
+
+# Pool Examples
+
 ```cs
 using var p = Pool(); 
 var i = p.Query()
@@ -75,7 +86,7 @@ var res2 = p.Query<long>(Database2) //Query another Database
 
 p.Commit();  //With the using statement in place, if this is not called everything will be rollbacked.
 ```
-#Pool lambdas:
+# Pool lambda Examples:
 ```cs
 return Pool(p =>
     {
@@ -122,7 +133,7 @@ var t = PoolAsync(async p =>
             return t.Result;
 ```
 
-#CMD/QueryRun Examples:
+# CMD/QueryRun Examples:
 ```cs
 return QueryRun<List<string>> ...
 ```
@@ -139,7 +150,7 @@ return await QueryAsync<List<string>>('Some query', cmd =>
 
 ```
 
-#Transaction Examples:
+# Transaction Examples:
 ```cs
 var t = Transaction(t => ...
 ```
@@ -156,7 +167,8 @@ var tsk = TransactionAsync(t =>
             return tsk.Result;
 ```
 
-#Tests
+# Tests
 
-Are currently not DB independent and chaotic.
+On seperate Branch cause they are a mess.
+DB Instance dependent and chaotic, see:
 Eventually there will be Tables generated/deleted in the tests.
