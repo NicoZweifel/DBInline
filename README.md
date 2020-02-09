@@ -1,57 +1,62 @@
 # DBInline 1.0.0-alpha
 
-Work in Progress, currently all Tests pass.
-Alpha Release Version. Should not be used in Production.
+- WIP
+- Currently all Tests pass.
+- Alpha Release Version. Should not be used in Production.
 
 # Summary
 
-Collection of Classes/Interfaces/Extensions to quickly get transactions,
-commands and also pool different Databases in one Connectionpool.
-Rollbacks/Disposing is handled in the background.
+- Collection of Classes/Interfaces/Extensions to quickly get transactions,
+  commands and also pool different Databases in one Connectionpool.
+  
+- Rollbacks/Disposing is handled in the background.
 
-Commits, Rollbacks all transactions/connections of multiple databases are created and pooled together.
+- Commits, Rollbacks all transactions/connections of multiple databases are created and pooled together.
 
-Will rollback if an exception occurs or if you are using the Pool class and forget to call Commit().
-The Lambda version does not need the Commit call, but you have to pass a lambda instead.
+- Will rollback if an exception occurs or if you are using the Pool class and forget to call Commit().
 
-There is also extensions to quickly get a transaction or command going.
+- The Lambda version does not need the Commit call, but you have to pass a lambda instead.
 
-The Transactions rollback in the Pool.Dispose() method if an unhandled exception occurs.
-The Lambda version handles the transactions and connections after the lambda execution fails/completes.
+- There is also extensions to quickly get a transaction or command going.
+
+- The Transactions rollback in the Pool.Dispose() method if an unhandled exception occurs.
+
+- The Lambda version handles the transactions and connections after the lambda execution fails/completes.
 
 # DatabaseContext
 
-The DBcontext is identified with a name and you can register a new context in the ContextController class.
-If no name is passed, a defaultContext is used.
+- The DBcontext is identified with a name and you can register a new context in the ContextController class.
 
-Postgres and MsSql are tested, MySql isn't but should work as well if a connectionstring is defined in the DatabaseContext class.
+- If no name is passed, a defaultContext is used.
 
-Sqllite might be removed in the future, since it does not support everything anyway.
+- Postgres and MsSql are tested, MySql isn't but should work as well if a connectionstring is defined in the DatabaseContext class.
+
+- Sqllite might be removed in the future, since it does not support everything anyway.
 
 # Async
 
-Contains async versions for every method also async Lambda Pool versions,
-so you can query different Databases at the same time and everything will be rollbacked if an exception occurs.
+- Contains async versions for every method also async Lambda Pool versions,
+  so you can query different Databases at the same time and everything will be rollbacked if an exception occurs.
 
 # Usage
 
-It is not forbidden to nest pools, some tests passed, but it is not intended/supported and may yield unexpected results.
+- It is not forbidden to nest pools, some tests passed, but it is not intended/supported and may yield unexpected results.
 
-There is a lot of options on how to selec objects (Datatset,Datatable,Reader etc...),
-which makes the api a little unintuitive in some places, since there is too many options at the moment.
+- There is a lot of options on how to selec objects (Datatset,Datatable,Reader etc...),
+  which makes the api a little unintuitive in some places, since there is too many options at the moment.
 
-Some of them might be removed for clearer Usage and improved generic type inference.
+- Some of them might be removed for clearer Usage and improved generic type inference.
 
-Since everything is connected through interfaces, all these methods can be mixed,
-it all comes down to a QueryBuilder and ConnectionSource Interfaces
+- Since everything is connected through interfaces, all these methods can be mixed,
+  it all comes down to a QueryBuilder and ConnectionSource Interfaces
 
 # Using Pool
 
-Don't forget to use using ```cs var p = new Pool()``` on this variant, or ur pool will not be rollbacked/disposed/handled properly.
-If using lambdas is preferred, there static functions that tale a lambda for everything.
+- Don't forget to use using ```cs var p = new Pool()``` on this variant, or ur pool will not be rollbacked/disposed/handled properly.
+- If using lambdas is preferred, there static functions that tale a lambda for everything.
 
-These have to be statically imported.
- E.g.: 
+- These have to be statically imported.
+  E.g.: 
  ```cs
  using static DBInline.Extensions;
  ```
@@ -98,11 +103,11 @@ return Pool(p =>
     });
 }          
 ```
-Or:
+- Or:
 ```cs
 var t =PoolAsync(p => ...            
 ```        
-Or if an async lambda is necessary (for querying multiple different Databases at once.):            
+- Or if an async lambda is necessary (for querying multiple different Databases at once.):            
 ```cs 
 var t = PoolAsync(async p =>
             {
@@ -137,7 +142,7 @@ var t = PoolAsync(async p =>
 ```cs
 return QueryRun<List<string>> ...
 ```
-Or:
+- Or:
 ```cs
 return await QueryAsync<List<string>>('Some query', cmd =>
             {
@@ -154,7 +159,7 @@ return await QueryAsync<List<string>>('Some query', cmd =>
 ```cs
 var t = Transaction(t => ...
 ```
-Or:
+- Or:
 ```cs
 var tsk = TransactionAsync(t =>
             {
@@ -169,6 +174,6 @@ var tsk = TransactionAsync(t =>
 
 # Tests
 
-On seperate Branch cause they are a mess.
-DB Instance dependent and chaotic, see:
-Eventually there will be Tables generated/deleted in the tests.
+- On seperate Branch cause they are a mess.
+- DB Instance dependent and chaotic, see:[Improve Test Project](https://github.com/NicoZweifel/DBInline/issues/1)
+- Eventually there will be Tables generated/deleted in the tests.
