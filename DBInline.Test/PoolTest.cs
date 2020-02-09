@@ -121,7 +121,7 @@ namespace DBInline.Test
                 var res = p.Query<string>()
                     .Set(ExampleQuery1)
                     .Param(Param1)
-                    .AddRollback(() => { })
+                    .Rollback(() => { })
                     .ScalarAsync();
 
                 var t2 = p.Query<long>(Database2)
@@ -153,14 +153,14 @@ namespace DBInline.Test
                 var res = p.Query<int>()
                     .Set(RollbackQuery)
                     .Param(Param1)
-                    .AddRollback(() => { rollbackTest += 1; })
+                    .Rollback(() => { rollbackTest += 1; })
                     .Run();
 
                 // ReSharper disable once RedundantAssignment
                 var res2 = p.Query<long>(Database2)
                     .Set(ExampleQuery2)
                     .Param(Param2)
-                    .AddRollback( ()=> { rollbackTest += 3; })
+                    .Rollback( ()=> { rollbackTest += 3; })
                     .Scalar();
 
                 throw new Exception("TEST");
@@ -202,14 +202,14 @@ namespace DBInline.Test
                     i = await s.Query<int>()
                         .Set(RollbackQuery)
                         .Param(Param1)
-                        .AddRollback(() => rollbackTest += 1)
+                        .Rollback(() => rollbackTest += 1)
                         .RunAsync();
 
                     //2nd Query.
                     await s.Query<int>(Database2)
                         .Set(RollbackQuery2)
                         .Param(Param2)
-                        .AddRollback(() => rollbackTest += 1)
+                        .Rollback(() => rollbackTest += 1)
                         .RunAsync();
 
                     //Crash to Trigger Rollback.
@@ -258,7 +258,7 @@ namespace DBInline.Test
                     var res = p.Query<string>()
                         .Set(ExampleQuery1)
                         .Param(Param1)
-                        .AddRollback(() => { })
+                        .Rollback(() => { })
                         .ScalarAsync();
 
                     var t2 = p.Query<long>(Database2)

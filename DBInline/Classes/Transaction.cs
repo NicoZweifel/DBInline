@@ -21,7 +21,7 @@ namespace DBInline.Classes
 
         // ReSharper disable once MemberCanBePrivate.Global
         // ReSharper disable once CollectionNeverQueried.Global
-        [NotNull] public readonly List<IDbDataParameter> Parameters = new List<IDbDataParameter>();
+        [NotNull] public readonly List<IDbDataParameter> ParameterCollection = new List<IDbDataParameter>();
 
         // ReSharper disable once CollectionNeverQueried.Local
         private readonly List<Command> _commands = new List<Command>();
@@ -54,7 +54,7 @@ namespace DBInline.Classes
             RollbackActions.ForEach(x => x.DynamicInvoke());
         }
 
-        public IAddRollBack AddRollback(Action action)
+        public IAddRollBack Rollback(Action action)
         {
             RollbackActions.Add(action);
             return this;
@@ -64,11 +64,11 @@ namespace DBInline.Classes
         public IDbDataParameter AddParam(string name, object value)
         {
             var p = new SimpleParameter(name, value).ToDbParameter(Connection.DbType);
-            Parameters.Add(p);
+            ParameterCollection.Add(p);
             return p;
         }
 
-        public IAddParameter AddParameters(IEnumerable<IDbDataParameter> paramArray)
+        public IAddParameter Parameters(IEnumerable<IDbDataParameter> paramArray)
         {
             foreach (var p in paramArray)
             {
@@ -92,14 +92,14 @@ namespace DBInline.Classes
         public IAddParameter AddParam(SimpleParameter parameter)
         {
             var p = new SimpleParameter(parameter.Name, parameter.Value);
-            Parameters.Add(p.ToDbParameter(Connection.DbType));
+            ParameterCollection.Add(p.ToDbParameter(Connection.DbType));
             return this;
         }
 
         public IAddParameter AddParam(Parameter parameter)
         {
             var p = new SimpleParameter(parameter.Name, parameter.Value);
-            Parameters.Add(p.ToDbParameter(Connection.DbType));
+            ParameterCollection.Add(p.ToDbParameter(Connection.DbType));
             return this;
         }
 

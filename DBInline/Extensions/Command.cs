@@ -72,7 +72,7 @@ namespace DBInline
             return @this.Transaction(tran =>
             {
                 using var cmd = new Command<T>(command, tran);
-                cmd.AddParameters(parameters ?? new IDbDataParameter[] { });
+                cmd.Parameters(parameters ?? new IDbDataParameter[] { });
                 cmd.ExecuteNonQuery();
                 return @this;
             });

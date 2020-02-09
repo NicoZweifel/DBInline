@@ -39,7 +39,6 @@ namespace DBInline.Interfaces
         public Task<DataSet> DataSetAsync();
         public  DbDataReader Reader();
         public Task<DbDataReader> ReaderAsync();
-        public IQueryBuilder Builder { get; }
         public new IQuery Set(string text);
         public T Scalar<T>();
         public Task<T> ScalarAsync<T>();
@@ -47,8 +46,7 @@ namespace DBInline.Interfaces
         public  IAsyncEnumerable<TOut> SelectAsync<TOut>(Func<IDataReader, TOut> transform);
     }
     
-    
-    public interface IQueryBuilder : IClauseBuilder<IQueryBuilder>,IWrapCommand
+    public interface IQueryBuilder :IQuery,IOrBuilder<IQuery>
     {
     }
     public interface IWrapCommand

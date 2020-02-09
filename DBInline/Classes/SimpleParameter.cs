@@ -115,9 +115,9 @@ namespace DBInline.Classes
             set => DbParameter.Size = value;
         }
         // ReSharper disable once MemberCanBePrivate.Global
-        public IAddRollBack AddRollback(Action action)
+        public IAddRollBack Rollback(Action action)
         {
-            _command.Transaction.AddRollback(action);
+            _command.Transaction.Rollback(action);
             return this;
         }
         // ReSharper disable once MemberCanBePrivate.Global
@@ -127,7 +127,7 @@ namespace DBInline.Classes
             return _command.Param(name, value);
         }
 
-        public IAddParameter AddParameters(IEnumerable<IDbDataParameter> paramArray)
+        public IAddParameter Parameters(IEnumerable<IDbDataParameter> paramArray)
         {
             throw new NotImplementedException();
         }

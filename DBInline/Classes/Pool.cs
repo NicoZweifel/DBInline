@@ -258,7 +258,7 @@ namespace DBInline.Classes
             return this;
         }
 
-        public IAddRollBack AddRollback(Action action)
+        public IAddRollBack Rollback(Action action)
         {
             _rollbackActions.Add(action);
             return this;
