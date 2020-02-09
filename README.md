@@ -131,11 +131,11 @@ var res1 = !p.Query()
     .Select(r => (string)r[0]) //create desired object.
     .ToList();
 
-for (var counter = 1; counter< 10;counter++)
+for (var counter = 1; counter< 10; counter++)
 {
     p.Query()
         .Set('Update/delete query')
-        .Param("DBID",10)
+        .Param("DBID", counter)
         .Where("DBID = @DBID")
         .AddRollback(() =>
         {
@@ -158,7 +158,7 @@ return Pool(p =>
     {
         var res1 = p.Query<DataTable>()
             .Set('Some select query')
-            .Param("DBID",10)
+            .Param("DBID", 10)
             .Where("DBID = @DBID")
             .Table(); //Select as Datatable
         return res1;
