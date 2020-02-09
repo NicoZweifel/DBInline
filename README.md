@@ -95,7 +95,7 @@ p.Commit();  //With the using statement in place, if this is not called everythi
 ```cs
 return Pool(p =>
     {
-        var res1 = p.Query<string>()
+        var res1 = p.Query<DataTable>()
             .Set('Some select query')
             .Param('Some parameter') //param with SimpleParameter class can also be called with (name,value).
             .Table(); //Select as Datatable
