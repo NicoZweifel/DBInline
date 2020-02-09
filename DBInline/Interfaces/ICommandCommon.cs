@@ -6,7 +6,7 @@ using DBInline.Classes;
 
 namespace DBInline.Interfaces
 {
-    public interface ICommandBuilderCommon<out TBuilder> : IAddRollBack, IAddParameter where TBuilder : IQueryCommon
+    public interface ICommandCommon<out TBuilder> : IAddRollBack, IAddParameter where TBuilder : IQueryCommon
     {
         public new TBuilder Rollback(Action action);
         public new TBuilder Param(string name, object value);

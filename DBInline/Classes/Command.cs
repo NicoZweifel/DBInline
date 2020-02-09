@@ -74,42 +74,42 @@ namespace DBInline.Classes
             ClauseBuilder.AddWhere(clause);
             return this;
         }
-        IQuery<T> ICommandBuilderCommon<IQuery<T>>.Order(string clause)
+        IQuery<T> ICommandCommon<IQuery<T>>.Order(string clause)
         {
             ClauseBuilder.OrderClause = clause;
             return this;
         }
-        IQuery<T> ICommandBuilderCommon<IQuery<T>>.Limit(int limit)
+        IQuery<T> ICommandCommon<IQuery<T>>.Limit(int limit)
         {
             ClauseBuilder.Limit = limit;
             return this;
         }
 
-        IQuery<T> ICommandBuilderCommon<IQuery<T>>.Rollback(Action action)
+        IQuery<T> ICommandCommon<IQuery<T>>.Rollback(Action action)
         {
              Rollback(action);
              return this;
         }
 
-        IQuery<T> ICommandBuilderCommon<IQuery<T>>.Param(string name, object value)
+        IQuery<T> ICommandCommon<IQuery<T>>.Param(string name, object value)
         {
             Param(name, value);
             return this;
         }
 
-        IQuery<T> ICommandBuilderCommon<IQuery<T>>.Param(IDbDataParameter parameter)
+        IQuery<T> ICommandCommon<IQuery<T>>.Param(IDbDataParameter parameter)
         {
             Param(parameter.ParameterName,parameter.Value);
             return this;
         }
 
-        IQuery<T> ICommandBuilderCommon<IQuery<T>>.Param(SimpleParameter parameter)
+        IQuery<T> ICommandCommon<IQuery<T>>.Param(SimpleParameter parameter)
         {
             Param(parameter.Name,parameter.Value);
             return this;
         }
 
-        IQuery<T> ICommandBuilderCommon<IQuery<T>>.Parameters(IEnumerable<IDbDataParameter> paramArray)
+        IQuery<T> ICommandCommon<IQuery<T>>.Parameters(IEnumerable<IDbDataParameter> paramArray)
         {
             Parameters(paramArray);
             return this;
@@ -313,7 +313,7 @@ namespace DBInline.Classes
             Transaction.Rollback(action);
             return this;
         }
-        IQuery ICommandBuilderCommon<IQuery>.Param(string name, object value)
+        IQuery ICommandCommon<IQuery>.Param(string name, object value)
         {
             CreateParameter(name,value);
             return this;
@@ -331,7 +331,7 @@ namespace DBInline.Classes
             return this;
         }
 
-        IQuery ICommandBuilderCommon<IQuery>.Parameters(IEnumerable<IDbDataParameter> paramArray)
+        IQuery ICommandCommon<IQuery>.Parameters(IEnumerable<IDbDataParameter> paramArray)
         {
             foreach (var dbDataParameter in paramArray)
             {
@@ -387,26 +387,26 @@ namespace DBInline.Classes
         }
         
 
-        IQuery ICommandBuilderCommon<IQuery>.Limit(int limit)
+        IQuery ICommandCommon<IQuery>.Limit(int limit)
         {
             ClauseBuilder.Limit = limit;
             return this;
         }
 
-        IQuery ICommandBuilderCommon<IQuery>.Order(string clause)
+        IQuery ICommandCommon<IQuery>.Order(string clause)
         {
             ClauseBuilder.OrderClause = clause;
             return this;
         }
 
  
-        IQuery ICommandBuilderCommon<IQuery>.Param(IDbDataParameter parameter)
+        IQuery ICommandCommon<IQuery>.Param(IDbDataParameter parameter)
         {
             CreateParameter(parameter.ParameterName,parameter.Value);
             return this;
         }
 
-        IQuery ICommandBuilderCommon<IQuery>.Param(SimpleParameter parameter)
+        IQuery ICommandCommon<IQuery>.Param(SimpleParameter parameter)
         {
             CreateParameter(parameter.Name,parameter.Value);
             return this;
@@ -451,7 +451,7 @@ namespace DBInline.Classes
             var (name, value) = valueTuple;
             return CreateParameter(name,value);
         }
-        public ICommandBuilderCommon<IQueryCommon> BuilderCommon => this;
+        public ICommandCommon<IQueryCommon> Common => this;
         Command IWrapCommand.Command => this;
         public Task<int> RunAsync()
         {

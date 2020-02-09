@@ -8,7 +8,7 @@ namespace DBInline.Interfaces
     {
         public int Run();
         public Task<int> RunAsync();
-        public ICommandBuilderCommon<IQueryCommon> BuilderCommon { get; }
+        public ICommandCommon<IQueryCommon> Common { get; }
         public DataTable Table();
         public Task<DataTable> TableAsync();
         public DataSet DataSet();
