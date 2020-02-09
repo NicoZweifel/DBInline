@@ -51,7 +51,7 @@ namespace DBInline.Classes
         public override void Rollback()
         {
             DbTransaction.Rollback();
-            RollbackActions.ForEach(x => x.DynamicInvoke());
+            RollbackActions.ForEach(x => x.Invoke());
         }
 
         public IAddRollBack Rollback(Action action)

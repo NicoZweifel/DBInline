@@ -129,12 +129,17 @@ namespace DBInline.Classes
 
         public IAddParameter Parameters(IEnumerable<IDbDataParameter> paramArray)
         {
-            throw new NotImplementedException();
+            foreach (var dbDataParameter in paramArray)
+            {
+                Param(dbDataParameter.ParameterName, dbDataParameter.Value);
+            }
+            return this;
         }
 
         public IDbDataParameter AddParam((string name, object value) valueTuple)
         {
-            throw new NotImplementedException();
+            _command.Param(valueTuple.name,valueTuple.value);
+            return this;
         }
     }
 }

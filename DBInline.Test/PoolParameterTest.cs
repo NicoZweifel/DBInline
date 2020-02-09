@@ -38,8 +38,8 @@ namespace DBInline.Test
                 .Scalar();
 
             Assert.IsTrue(peter == 4, "Name missing.");
-
             p.Commit();
+            Assert.Pass();
         }
 
 
@@ -71,12 +71,13 @@ namespace DBInline.Test
                 Assert.IsTrue(johnJames.Contains("James Smith"), "Name missing.");
                 Assert.IsTrue(johnJames.Contains("John Doe"), "Name missing.");
 
-                var peter = await p.Query<string>()
+                var peter = await p.Query<int>()
                     .Set(SelectQuery)
                     .ScalarAsync()
                     .ConfigureAwait(false);
 
-                Assert.IsTrue(peter == "Peter Brown", "Name missing.");
+                Assert.IsTrue(peter == 4, "Name missing.");
+                Assert.Pass();
             });
         }
     }

@@ -73,7 +73,7 @@ namespace DBInline.Classes
             var exceptions = new List<Exception>();
             try
             {
-                foreach (var command in _commands)
+                foreach (var command in _commands.ToList())
                 {
                     try
                     {
@@ -101,7 +101,7 @@ namespace DBInline.Classes
 
             try
             {
-                foreach (var transaction in _transactions)
+                foreach (var transaction in _transactions.ToList())
                 {
                     try
                     {
@@ -120,9 +120,8 @@ namespace DBInline.Classes
 
             try
             {
-                foreach (var rollbackAction in _rollbackActions
-                    .Union(_wrappedTransactions.SelectMany(t => t.RollbackActions))
-                    .ToList())
+                foreach (var rollbackAction in _rollbackActions.ToList()
+                    .Union(_wrappedTransactions.ToList().SelectMany(t => t.RollbackActions)))
                 {
                     try
                     {

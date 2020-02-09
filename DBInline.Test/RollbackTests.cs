@@ -50,15 +50,16 @@ namespace DBInline.Test
                 });
                 Assert.IsTrue(l.Count > 0, "Rollback has failed!");
             }
+            Assert.Pass();
         }
 
 
         [Test, NonParallelizable, Order(1)]
         public void PoolRollbackTestAsyncLambda()
         {
-            Pool(async p =>
+            try
             {
-                try
+                Pool(async p =>
                 {
                     await p.Query()
                         .Set(DeleteQuery)
@@ -78,20 +79,22 @@ namespace DBInline.Test
 #pragma warning disable 162
                     p.Commit();
 #pragma warning restore 162
-                }
-                catch (Exception e)
+
+                });
+            }
+            catch (Exception e)
+            {
+                Debug.Write(e.ToString());
+                var l = Transaction(t =>
                 {
-                    Debug.Write(e.ToString());
-                    var l = Transaction(t =>
-                    {
-                        return t.Query()
-                            .Set(SelectQuery)
-                            .Select(x => (int) x[0])
-                            .ToList();
-                    });
-                    Assert.IsTrue(l.Count > 0, "Rollback has failed!");
-                }
-            });
+                    return t.Query()
+                        .Set(SelectQuery)
+                        .Select(x => (int) x[0])
+                        .ToList();
+                });
+                Assert.IsTrue(l.Count > 0, "Rollback has failed!");
+            }
+            Assert.Pass();
         }
 
         [Test, NonParallelizable, Order(2)]
@@ -130,6 +133,7 @@ namespace DBInline.Test
                 });
                 Assert.IsTrue(l.Count > 0, "Rollback has failed!");
             }
+            Assert.Pass();
         }
 
         [Test, NonParallelizable, Order(3)]
@@ -170,6 +174,7 @@ namespace DBInline.Test
                 }).ConfigureAwait(false);
                 Assert.IsTrue(l.Count > 0, "Rollback has failed!");
             }
+            Assert.Pass();
         }
 
         [Test, NonParallelizable, Order(4)]
@@ -197,6 +202,7 @@ namespace DBInline.Test
                 });
                 Assert.IsTrue(l.Count > 0, "Rollback has failed!");
             }
+            Assert.Pass();
         }
 
         [Test, NonParallelizable, Order(5)]
@@ -224,6 +230,7 @@ namespace DBInline.Test
                 }).ConfigureAwait(false);
                 Assert.IsTrue(l.Count > 0, "Rollback has failed!");
             }
+            Assert.Pass();
         }
 
         private class TestException : Exception

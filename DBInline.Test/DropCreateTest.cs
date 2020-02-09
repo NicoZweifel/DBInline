@@ -50,8 +50,8 @@ namespace DBInline.Test
                 .Count;
              
              Assert.IsTrue(selCount == 5, "Table should be filled.");
-             
              p3.Commit();
+             Assert.Pass();
         }
     }
 }
