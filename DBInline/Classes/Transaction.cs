@@ -15,7 +15,7 @@ namespace DBInline.Classes
 
         internal readonly List<Action> RollbackActions = new List<Action>();
         public CancellationToken Token { get; set; }
-        internal new DatabaseConnection Connection { get;  set; }
+        internal new DatabaseConnection Connection { get; }
         protected override DbConnection DbConnection => Connection;
         public override IsolationLevel IsolationLevel => DbTransaction.IsolationLevel;
 
@@ -183,16 +183,11 @@ namespace DBInline.Classes
         {
             return this;
         }
-
         Transaction IConnectionSource.Transaction(string databaseName)
         {
             return ConnectionSource.Transaction(databaseName);
         }
-
-
-        public event CommandCreated CommandCreated; 
-
-    
+        public event CommandCreated CommandCreated;
     }
 }
 

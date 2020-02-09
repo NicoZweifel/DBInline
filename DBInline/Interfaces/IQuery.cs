@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace DBInline.Interfaces
 {
 
-    public interface IQuery : IQueryCommon, ICommandCommon<IQuery>, IWrapCommand
+    public interface IQuery : IQueryCommon, ICommand<IQuery>, IWrapCommand
     {
         public IQuery Set(string text);
         public T Scalar<T>();
@@ -15,7 +15,7 @@ namespace DBInline.Interfaces
         public IAsyncEnumerable<T> SelectAsync<T>(Func<IDataReader, T> transform);
     }
     
-    public interface IQuery<T> : IQueryCommon, ICommandCommon<IQuery<T>>, IWrapCommand
+    public interface IQuery<T> : IQueryCommon, ICommand<IQuery<T>,T>, IWrapCommand
     {
         public IQuery<T> Set(string text);
         public T Scalar();

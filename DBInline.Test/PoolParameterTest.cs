@@ -53,8 +53,7 @@ namespace DBInline.Test
                 await foreach (var x in p.Query()
                     .Set(SelectQuery)
                     .SelectAsync(x => (string)x[1]))
-                { list.Add(x); };
-
+                { list.Add(x); }
 
                 Assert.IsTrue(list.Count == 5, "Count should be 5.");
 
@@ -66,7 +65,7 @@ namespace DBInline.Test
                     .Where("name", "John Doe")
                     .Or("name", "James Smith")
                     .SelectAsync(x => (string)x[1]))
-                { johnJames.Add(x); };
+                { johnJames.Add(x); }
 
 
                 Assert.IsTrue(johnJames.Count == 2, "Count should be 2.");
