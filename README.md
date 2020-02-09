@@ -116,6 +116,7 @@ return await PoolAsync(async p =>
                     .SelectAsync(r=> (string)r[0]); //Select AsyncIenumerable.
 
                 var res1 = "";
+
                 await foreach(var obj in asyncIe) //AsyncIenumerable
                 {
                     res1 += obj;
