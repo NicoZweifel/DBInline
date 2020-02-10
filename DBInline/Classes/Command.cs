@@ -67,9 +67,6 @@ namespace DBInline.Classes
             return this;
         }
         
-
-
-
         IConditionBuilder<T> IConditionBuilder<T>.Or(string clause)
         {
             CommandBuilder.AddOr(clause);
@@ -82,7 +79,7 @@ namespace DBInline.Classes
             return this;
         }
 
-        public IUpdateBuilder<T> Set<TParam>(string columnName, TParam value)
+        public new IUpdateBuilder<T> Set<TParam>(string columnName, TParam value)
         {
             throw new NotImplementedException();
         }
@@ -372,7 +369,7 @@ namespace DBInline.Classes
             return this;
         }
 
-        private IQuery Parameters(IEnumerable<IDbDataParameter> paramArray)
+        public IQuery Parameters(IEnumerable<IDbDataParameter> paramArray)
         {
             foreach (var dbDataParameter in paramArray)
             {

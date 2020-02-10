@@ -9,12 +9,12 @@ namespace DBInline.Interfaces
     {
         public IUpdateBuilder<T> Set<TParam>(string columnName,TParam value);
     }
-    public interface IUpdateQuery : IUpdateBuilder, IQuery
+    public interface IUpdateQuery : IUpdateBuilder
     {
-    
+        public ICommand Run();
     }
-    public interface IUpdateQuery<T> : IUpdateBuilder<T>, IQuery<T>
+    public interface IUpdateQuery<T> : IUpdateBuilder<T>
     {
-    
+       public ICommand<T> Run();
     }
 }
