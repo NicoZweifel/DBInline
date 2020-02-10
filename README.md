@@ -8,7 +8,9 @@
 
 - Collection of Classes/Interfaces/Extensions to quickly get transactions,
   commands and also pool different Databases together in the code.
-  Contains various wrappers/static methods/overloads for different Database use-cases.
+  
+- Contains various wrappers/static methods/overloads for different Database use-cases.
+  Wrappers for Insert/Select/Update/Delete and Subqueries are currently in the works and will follow soon.
   
 - Rollbacks/Disposing is handled in the background.
 
@@ -119,8 +121,7 @@ return await QueryAsync<List<string>>('Some query', cmd =>
 using var p = Pool(); 
 var i = p.Query()
     .Set('Some update/delete query')
-    .Param("DBID",10)
-    .Where("DBID = @DBID")
+    .Where("DBID", 10)
     .AddRollback(() =>
     {
        Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
@@ -137,8 +138,7 @@ for (var counter = 1; counter< 10;counter++)
 {
     p.Query()
         .Set('Update/delete query')
-        .Param("DBID",counter)
-        .Where("DBID = @DBID")
+        .Where("DBID", counter")
         .AddRollback(() =>
         {
             Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
@@ -149,7 +149,7 @@ for (var counter = 1; counter< 10;counter++)
 var res2 = p.Query<long>(Database2) //Query another Database
     .Set('Some query')
     .Param("param", "value") //Add parameter with name and value
-    .Where("name = @param")
+    .Where("DBID > @param")
     .Scalar(); //ExecuteScalar
 
 p.Commit();  //With the using statement in place, if this is not called everything will be rollbacked.
@@ -160,8 +160,8 @@ return Pool(p =>
     {
         var res1 = p.Query<DataTable>()
             .Set('Some select query')
-            .Param("DBID",10)
-            .Where("DBID = @DBID")
+            .Where("DBID", 10)
+            .Or("DBID",11)
             .Table(); //Select as Datatable
         return res1.ToJson() //Extension to immediately create Json out of a Datatable;
     });
