@@ -138,7 +138,7 @@ for (var counter = 1; counter< 10;counter++)
 {
     p.Query()
         .Set('Update/delete query')
-        .Where("DBID", counter")
+        .Where("DBID", counter)
         .AddRollback(() =>
         {
             Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
