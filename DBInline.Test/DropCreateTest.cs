@@ -23,10 +23,8 @@ namespace DBInline.Test
                 .Run();
 
             p.Commit(); //Test if it saved
-
-            using var p2 = Pool();
-
-            var selCount = p2.Query()
+            
+            var selCount = p.Query()
                 .Set(SelectQuery)
                 .Select(x => x)
                 .ToList()
@@ -34,24 +32,22 @@ namespace DBInline.Test
 
             Assert.IsTrue(selCount == 0, "Table should be empty.");
 
-            var insCount = p2.Query()
+            var insCount = p.Query()
                 .Set(InsertQuery)
                 .Run();
 
             Assert.IsTrue(insCount == 5, "Table should be filled.");
 
-            p2.Commit();
-
-            using var p3 = Pool();
+            p.Commit();
             
-             selCount = p3.Query()
+             selCount = p.Query()
                 .Set(SelectQuery)
                 .Select(x => x)
                 .ToList()
                 .Count;
              
              Assert.IsTrue(selCount == 5, "Table should be filled.");
-             p3.Commit();
+             p.Commit();
              Assert.Pass();
         }
         
