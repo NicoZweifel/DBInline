@@ -1,4 +1,5 @@
 # DBInline 1.0.0-pre-release
+![.NET Core develop](https://github.com/NicoZweifel/DBInline/workflows/.NET%20Core%20develop/badge.svg)
 
 - WIP
 - Currently all Tests pass.
