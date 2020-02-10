@@ -18,8 +18,8 @@ namespace DBInline.Interfaces
         public Task<DataSet> DataSetAsync();
         public DbDataReader Reader();
         public Task<DbDataReader> ReaderAsync();
-        public IEnumerable<TOut> Select<TOut>(Func<IDataReader, TOut> transform);
-        public Task<List<TOut>> SelectAsync<TOut>(Func<IDataReader, TOut> transform);
-        public IAsyncEnumerable<TOut> SelectAsyncEnumerable<TOut>(Func<IDataReader, TOut> transform);
+        public IEnumerable<TOut> Get<TOut>(Func<IDataReader, TOut> transform);
+        public Task<List<TOut>> GetAsync<TOut>(Func<IDataReader, TOut> transform);
+        public IAsyncEnumerable<TOut> GetAsyncEnumerable<TOut>(Func<IDataReader, TOut> transform);
     }
 }

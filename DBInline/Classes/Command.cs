@@ -12,7 +12,7 @@ using Npgsql;
 
 namespace DBInline.Classes
 {
-    internal class Command<T> : Command,IQuery<T>,  IConditionBuilder<Command<T>>
+    internal class Command<T> : Command, IConditionBuilder<Command<T>, T>
     {
         public Command(string commandText, Transaction transaction) : base(commandText, transaction)
         {
@@ -46,13 +46,13 @@ namespace DBInline.Classes
             return this;
         }
 
-        IConditionBuilder<IQuery<T>> ICommandBuilder<IQuery<T>>.Where(string fieldName, object value)
+        IConditionBuilder<IQuery<T>, T> ICommandBuilder<IQuery<T>, T>.Where(string fieldName, object value)
         {
             WhereInternal(fieldName, value);
             return this;
         }
 
-        IConditionBuilder<IQuery<T>> ICommandBuilder<IQuery<T>>.Where(string clause)
+        IConditionBuilder<IQuery<T>, T> ICommandBuilder<IQuery<T>, T>.Where(string clause)
         {
             CommandBuilder.AddWhere(clause);
             return this;
@@ -100,20 +100,20 @@ namespace DBInline.Classes
             return this;
         }
 
-        Command<T> IConditionBuilder<Command<T>>.Or(string clause)
+        IConditionBuilder<Command<T>, T> IConditionBuilder<Command<T>, T>.Or(string clause)
         {
             CommandBuilder.AddOr(clause);
             return this;
         }
 
-        Command<T> IConditionBuilder<Command<T>>.Or(string fieldName, object value)
+        IConditionBuilder<Command<T>, T> IConditionBuilder<Command<T>, T>.Or(string fieldName, object value)
         {
             OrInternal(fieldName, value);
             return this;
         }
     }
 
-    public class Command : DbCommand, ITokenHolder, IQuery, IConditionBuilder<Command>
+    public class Command : DbCommand, ITokenHolder, IConditionBuilder<Command>
     {
         public Command(string commandText, Transaction transaction, bool isolated = true)
         {
@@ -255,7 +255,7 @@ namespace DBInline.Classes
             return res;
         }
 
-        public IEnumerable<TOut> Select<TOut>(Func<IDataReader, TOut> transform)
+        public IEnumerable<TOut> Get<TOut>(Func<IDataReader, TOut> transform)
         {
             CommandBuilder.BuildClauses(this);
             using var r = ExecuteReader();
@@ -266,7 +266,7 @@ namespace DBInline.Classes
             r.Close();
         }
 
-        public async Task<List<TOut>> SelectAsync<TOut>(Func<IDataReader, TOut> transform)
+        public async Task<List<TOut>> GetAsync<TOut>(Func<IDataReader, TOut> transform)
         {
             var res = new List<TOut>();
             await using var r = await ExecuteReaderAsync(Token);
@@ -278,7 +278,7 @@ namespace DBInline.Classes
             return res;
         }
 
-        public async IAsyncEnumerable<TOut> SelectAsyncEnumerable<TOut>(Func<IDataReader, TOut> transform)
+        public async IAsyncEnumerable<TOut> GetAsyncEnumerable<TOut>(Func<IDataReader, TOut> transform)
         {
             CommandBuilder.BuildClauses(this);
             await using var r = await ExecuteReaderAsync(Token);
@@ -503,13 +503,13 @@ namespace DBInline.Classes
         }
         
 
-        Command IConditionBuilder<Command>.Or(string clause)
+        IConditionBuilder<Command> IConditionBuilder<Command>.Or(string clause)
         {
             CommandBuilder.AddOr(clause);
             return this;
         }
 
-        Command IConditionBuilder<Command>.Or(string fieldName, object value)
+        IConditionBuilder<Command> IConditionBuilder<Command>.Or(string fieldName, object value)
         {
             OrInternal(fieldName, value);
             return this;

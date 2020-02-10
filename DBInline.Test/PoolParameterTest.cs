@@ -14,9 +14,17 @@ namespace DBInline.Test
         {
             using var p = Pool();
 
+            var test = p.Query<int>()
+                .Select()
+                .Add("id")
+                .Add("name")
+                .From(tableName)
+                .Where("id",2)
+                .Scalar();
+            
             var list = p.Query()
                 .Set(SelectQuery)
-                .Select(x => (string) x[1])
+                .Get(x => (string) x[1])
                 .ToList();
 
             Assert.IsTrue(list.Count == 5, "Count should be 5.");
@@ -25,7 +33,7 @@ namespace DBInline.Test
                 .Set(SelectQuery)
                 .Where("name", "John Doe")
                 .Or("name", "James Smith")
-                .Select(x => (string) x[1])
+                .Get(x => (string) x[1])
                 .ToList();
 
             Assert.IsTrue(johnJames.Count == 2, "Count should be 2.");
@@ -52,7 +60,7 @@ namespace DBInline.Test
 
                 await foreach (var x in p.Query()
                     .Set(SelectQuery)
-                    .SelectAsyncEnumerable(x => (string) x[1]))
+                    .GetAsyncEnumerable(x => (string) x[1]))
                 {
                     list.Add(x);
                 }
@@ -64,7 +72,7 @@ namespace DBInline.Test
                     .Set(SelectQuery)
                     .Where("name", "John Doe")
                     .Or("name", "James Smith")
-                    .SelectAsync(x => (string) x[1])
+                    .GetAsync(x => (string) x[1])
                     .ConfigureAwait(false)).ToList();
 
                 Assert.IsTrue(johnJames.Count == 2, "Count should be 2.");

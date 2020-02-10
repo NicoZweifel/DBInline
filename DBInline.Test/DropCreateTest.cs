@@ -26,7 +26,7 @@ namespace DBInline.Test
             
             var selCount = p.Query()
                 .Set(SelectQuery)
-                .Select(x => x)
+                .Get(x => x)
                 .ToList()
                 .Count;
 
@@ -40,7 +40,7 @@ namespace DBInline.Test
 
             selCount = p.Query()
                 .Set(SelectQuery)
-                .Select(x => x)
+                .Get(x => x)
                 .ToList()
                 .Count;
 
@@ -68,7 +68,7 @@ namespace DBInline.Test
                
                var selCount = p.Query()
                    .Set(SelectQuery)
-                   .Select(x => x)
+                   .Get(x => x)
                    .ToList()
                    .Count;
 
@@ -84,7 +84,7 @@ namespace DBInline.Test
 
                selCount = p.Query()
                    .Set(SelectQuery)
-                   .Select(x => x)
+                   .Get(x => x)
                    .ToList()
                    .Count;
              

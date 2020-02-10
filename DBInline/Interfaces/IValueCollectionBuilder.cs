@@ -1,12 +1,17 @@
+using System.Windows.Input;
+
 namespace DBInline.Interfaces
 {
-    public interface IValueCollectionBuilder<out TBuilder> : IQuery where TBuilder : IQueryCommon
+    public interface IValueCollectionBuilder<out TBuilder> where TBuilder : IQueryCommon
     {
-        public IFieldCollectionBuilder<TBuilder> Into(string[] fields);
+        public ICommandBuilder<TBuilder> Values(string[] fields);
+
+        public ITableBuilder<TBuilder> Select(string[] fields);
     }
     
-    public interface IFieldCollectionBuilder<out TBuilder> : IQuery where TBuilder : IQueryCommon
+    public interface ITableBuilder<out TBuilder> where TBuilder : IQueryCommon
     {
-        public IFieldCollectionBuilder<TBuilder> Into(string[] fields);
+        public ICommandBuilder<TBuilder> From(string tableName);
+        
     }
 }

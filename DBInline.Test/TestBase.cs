@@ -33,6 +33,9 @@ namespace DBInline.Test
             ContextController.AddContext("MsSql", credentials.Last().Type, credentials.Last().GetConnectionString());
         }
 
+
+        protected const string tableName = "\"dbinline_generated_table\"";
+        
         /// <summary>
         /// Creates Table for tests.
         /// </summary>

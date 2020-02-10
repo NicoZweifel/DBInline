@@ -25,7 +25,7 @@ namespace DBInline.Test
 
                 var selCount = p.Query()
                     .Set(SelectQuery)
-                    .Select(x => x)
+                    .Get(x => x)
                     .ToList()
                     .Count;
 
@@ -45,7 +45,7 @@ namespace DBInline.Test
                 {
                     return t.Query()
                         .Set(SelectQuery)
-                        .Select(x => (int) x[0])
+                        .Get(x => (int) x[0])
                         .ToList();
                 });
                 
@@ -69,7 +69,7 @@ namespace DBInline.Test
 
                     var selCount = p.Query()
                         .Set(SelectQuery)
-                        .Select(x => x)
+                        .Get(x => x)
                         .ToList()
                         .Count;
 
@@ -90,7 +90,7 @@ namespace DBInline.Test
                 {
                     return t.Query()
                         .Set(SelectQuery)
-                        .Select(x => (int) x[0])
+                        .Get(x => (int) x[0])
                         .ToList();
                 });
                 Assert.IsTrue(l.Count > 0, "Rollback has failed!");
@@ -111,7 +111,7 @@ namespace DBInline.Test
 
                     var selCount = p.Query()
                         .Set(SelectQuery)
-                        .Select(x => x)
+                        .Get(x => x)
                         .ToList()
                         .Count;
                     Assert.IsTrue(selCount == 0, "Table should be empty.");
@@ -128,7 +128,7 @@ namespace DBInline.Test
                 {
                     return t.Query()
                         .Set(SelectQuery)
-                        .Select(x => (int) x[0])
+                        .Get(x => (int) x[0])
                         .ToList();
                 });
                 
@@ -151,7 +151,7 @@ namespace DBInline.Test
 
                     var selCount = (await p.Query()
                             .Set(SelectQuery)
-                            .SelectAsync(x => x)
+                            .GetAsync(x => x)
                             .ConfigureAwait(false))
                         .Count;
 
@@ -169,7 +169,7 @@ namespace DBInline.Test
                 {
                     return t.Query()
                         .Set(SelectQuery)
-                        .Select(x => (int) x[0])
+                        .Get(x => (int) x[0])
                         .ToList();
                 }).ConfigureAwait(false);
                 
@@ -201,7 +201,7 @@ namespace DBInline.Test
                 {
                     return t.Query()
                         .Set(SelectQuery)
-                        .Select(x => (int) x[0])
+                        .Get(x => (int) x[0])
                         .ToList();
                 });
                 
@@ -233,7 +233,7 @@ namespace DBInline.Test
                 {
                     return t.Query()
                         .Set(SelectQuery)
-                        .Select(x => (int) x[0])
+                        .Get(x => (int) x[0])
                         .ToList();
                 }).ConfigureAwait(false);
                 
