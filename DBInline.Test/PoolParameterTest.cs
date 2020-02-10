@@ -36,14 +36,16 @@ namespace DBInline.Test
             
 //the rest works
             var list = p.Query()
-                .Text(SelectQuery)
+                .Select("*")
+                .From(tableName)
                 .Get(x => (string) x[1])
                 .ToList();
 
             Assert.IsTrue(list.Count == 5, "Count should be 5.");
 
             var johnJames = p.Query()
-                .Text(SelectQuery)
+                .Select("*")
+                .From(tableName)
                 .Where("name", "John Doe")
                 .Or("name", "James Smith")
                 .Get(x => (string) x[1])
@@ -54,7 +56,8 @@ namespace DBInline.Test
             Assert.IsTrue(johnJames.Contains("John Doe"), "Name missing.");
 
             var peter = p.Query<int>()
-                .Text(SelectQuery)
+                .Select("*")
+                .From(tableName)
                 .Where("name", "Peter Brown")
                 .Scalar();
 
@@ -72,7 +75,8 @@ namespace DBInline.Test
                 var list = new List<string>();
 
                 await foreach (var x in p.Query()
-                    .Text(SelectQuery)
+                    .Select("*")
+                    .From(tableName)
                     .GetAsyncEnumerable(x => (string) x[1])
                     .ConfigureAwait(false))
                 {
@@ -83,7 +87,8 @@ namespace DBInline.Test
 
 
                 var johnJames = (await p.Query()
-                    .Text(SelectQuery)
+                    .Select("*")
+                    .From(tableName)
                     .Where("name", "John Doe")
                     .Or("name", "James Smith")
                     .GetAsync(x => (string) x[1])
@@ -94,7 +99,9 @@ namespace DBInline.Test
                 Assert.IsTrue(johnJames.Contains("John Doe"), "Name missing.");
 
                 var peter = await p.Query<int>()
-                    .Text(SelectQuery)
+                    .Select("id")
+                    .From(tableName)
+                    .Where("name","Peter Brown")
                     .ScalarAsync()
                     .ConfigureAwait(false);
 

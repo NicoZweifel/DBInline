@@ -12,7 +12,7 @@ using Npgsql;
 
 namespace DBInline.Classes
 {
-    internal class Command<T> : Command, IQuery<T>,ICommandBuilder<T>,IUpdateBuilder<T>,ISelectBuilder<T>,IInsertBuilder<T>,IConditionBuilder<T>,IValueCollectionBuilder<T>
+    internal class Command<T> : Command,ISelectBuilder<T>,IColumnsBuilder<T>,IConditionBuilder<T>,IInsertFromBuilder<T>,IUpdateQuery<T>,IColumnsFromQuery<T>
     {
         public Command(string commandText, Transaction transaction) : base(commandText, transaction)
         {
@@ -78,39 +78,11 @@ namespace DBInline.Classes
             OrInternal(fieldName, value);
             return this;
         }
+        
 
-        public new IUpdateBuilder<T> Set<TParam>(string columnName, TParam value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public new IQuery<T> From(string tableName)
-        {
-            throw new NotImplementedException();
-        }
-
-        public new ISelectBuilder<T> Add(string columnName)
-        {
-            throw new NotImplementedException();
-        }
-
-        public new IValueCollectionBuilder<T> Into(string[] columns)
-        {
-            throw new NotImplementedException();
-        }
-
-        public new ICommandBuilder<T> Values(string[] fields)
-        {
-            throw new NotImplementedException();
-        }
-
-        public new ITableBuilder<T> Select(string[] fields)
-        {
-            throw new NotImplementedException();
-        }
     }
 
-    public class Command : DbCommand, IQuery,ICommandBuilder,IUpdateBuilder,ISelectBuilder,IInsertBuilder,IConditionBuilder,IValueCollectionBuilder, ITokenHolder
+    public class Command : DbCommand,ISelectBuilder,IInsertBuilder,IConditionBuilder, ITokenHolder,IInsertFromBuilder,IUpdateQuery,IInsertFromQuery
     {
         public Command(string commandText, Transaction transaction, bool isolated = true)
         {
@@ -305,6 +277,11 @@ namespace DBInline.Classes
             return res;
         }
 
+        ICommandBuilder IInsertFromQuery.From(string tableName)
+        {
+            throw new NotImplementedException();
+        }
+
         public object RunScalar()
         {
             var res = ExecuteScalar();
@@ -482,33 +459,6 @@ namespace DBInline.Classes
             CommandBuilder.AddOr($"{fieldName}={name}");
         }
 
-        public IUpdateBuilder Set<TParam>(string columnName, TParam value)
-        {
-            throw new NotImplementedException();
-        }
-        public IQuery From(string tableName)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ISelectBuilder Add(string columnName)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IValueCollectionBuilder Into(string[] columns)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ICommandBuilder Values(string[] fields)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ITableBuilder Select(string[] fields)
-        {
-            throw new NotImplementedException();
-        }
+    
     }
 }

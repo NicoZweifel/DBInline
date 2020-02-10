@@ -2,12 +2,12 @@ namespace DBInline.Interfaces
 {
     public interface IInsertFromBuilder
     {
-        public ITableBuilder Select(string[] fields);
+        public IInsertFromQuery Select(string[] fields);
         
     }
     public interface IInsertFromBuilder<T>
     {
-        public ITableBuilder<T> Select(string[] fields);
+        public IColumnsFromQuery<T> Select(string[] columns);
         
     }
 }

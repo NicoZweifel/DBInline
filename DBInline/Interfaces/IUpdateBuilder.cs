@@ -1,20 +1,25 @@
+using System.Threading.Tasks;
+
 namespace DBInline.Interfaces
 {
    
     public interface IUpdateBuilder 
     {
-        public IUpdateBuilder Set<TParam>(string columnName, TParam value);
+        public IUpdateQuery Set<TParam>(string columnName, TParam value);
     }
     public interface IUpdateBuilder<T> 
     {
-        public IUpdateBuilder<T> Set<TParam>(string columnName,TParam value);
+        public IUpdateQuery<T> Set<TParam>(string columnName,TParam value);
     }
-    public interface IUpdateQuery : IUpdateBuilder
+    public interface IUpdateQuery : IUpdateBuilder , ICommand, ICommandBuilder
     {
-        public ICommand Run();
+        public int Run();
+        public Task<int> RunAsync();
+        
     }
-    public interface IUpdateQuery<T> : IUpdateBuilder<T>
+    public interface IUpdateQuery<T> : IUpdateBuilder<T> , ICommand<T>,ICommandBuilder<T>
     {
-       public ICommand<T> Run();
+        public int Run();
+        public Task<int> RunAsync();
     }
 }

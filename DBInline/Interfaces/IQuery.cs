@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace DBInline.Interfaces
 {
 
-    public interface IQuery : IWrapCommand
+    public interface IQuery :  ICommandBuilder,ICommand
     {
         public T Scalar<T>();
         public Task<T> ScalarAsync<T>();
@@ -24,7 +24,7 @@ namespace DBInline.Interfaces
         public IAsyncEnumerable<TOut> GetAsyncEnumerable<TOut>(Func<IDataReader, TOut> transform);
     }
     
-    public interface IQuery<T> : IQuery
+    public interface IQuery<T> :  ICommandBuilder<T>,ICommand<T>
     {
         public T Scalar();
         public Task<T> ScalarAsync();
