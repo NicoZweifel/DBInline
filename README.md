@@ -1,4 +1,4 @@
-# DBInline 1.0.0
+# DBInline 1.0.0-pre-release
 
 - WIP
 - Currently all Tests pass.
@@ -188,7 +188,7 @@ return await PoolAsync(async p =>
                            .Set(SelectQuery)
                            .Where("name", "John Doe")
                            .Or("name", "James Smith")
-                           .SelectAsync(x => (string) x[1]) //Selecting Task<List<T>
+                           .SelectAsync(x => (string) x[1]) //Selecting Task<List<T>>
                            .ConfigureAwait(false));
        
                        var peter = await p.Query<int>()
