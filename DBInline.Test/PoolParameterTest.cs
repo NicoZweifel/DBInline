@@ -13,7 +13,7 @@ namespace DBInline.Test
         public void PoolTest()
         {
             using var p = Pool();
-
+//doesnt work yet
             var test = p.Query<int>()
                 .Select()
                 .Add("id")
@@ -21,7 +21,19 @@ namespace DBInline.Test
                 .From(tableName)
                 .Where("id",2)
                 .Scalar();
+//doesnt work yet
+            var test2 = p.Query<int>()
+                .Update(tableName)
+                .Set("name", "John Doe2")
+                .Set("id",6)
+                .Where("id", 1)
+                .Select()
+                .Add("name")
+                .From(tableName)
+                .Where("id",6)
+                .Scalar();
             
+//the rest works
             var list = p.Query()
                 .Set(SelectQuery)
                 .Get(x => (string) x[1])

@@ -9,6 +9,9 @@ namespace DBInline.Interfaces
 {
     public interface IQueryCommon
     {
+        public ISelectBuilder<IQuery> Select(string [] fields = null);
+        public IInsertBuilder<IQuery> InsertInto(string tableName);
+        public IUpdateBuilder<IQuery> Update(string tableName);
         public int Run();
         public Task<int> RunAsync();
         public ICommandBuilderCommon<IQueryCommon> BuilderCommon { get; }
