@@ -10,7 +10,8 @@
   commands and also pool different Databases together in the code.
   
 - Contains various wrappers/static methods/overloads for different Database use-cases.
-  Wrappers for Insert/Select/Update/Delete and Subqueries are currently in the works and will follow soon.
+ 
+- Seperate simpler interfaces for Insert/Select/Update/Delete and Subqueries are currently in the works (feature/CommandBuilders) and will follow soon.
   
 - Rollbacks/Disposing is handled in the background.
 
