@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ namespace DBInline.Interfaces
     {
         public int Run();
         public Task<int> RunAsync();
-        public ICommandCommon<IQueryCommon> Common { get; }
+        public ICommandBuilderCommon<IQueryCommon> BuilderCommon { get; }
         public DataTable Table();
         public Task<DataTable> TableAsync();
         public DataSet DataSet();

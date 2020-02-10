@@ -12,7 +12,7 @@ using Npgsql;
 
 namespace DBInline.Classes
 {
-    internal class Command<T> : Command, IQueryBuilder<Command<T>, T>
+    internal class Command<T> : Command,IQuery<T>,  IConditionBuilder<Command<T>>
     {
         public Command(string commandText, Transaction transaction) : base(commandText, transaction)
         {
@@ -42,78 +42,78 @@ namespace DBInline.Classes
         
         IQuery<T> IQuery<T>.Set(string text)
         {
-            ClauseBuilder.CommandText = text;
+            CommandBuilder.CommandText = text;
             return this;
         }
 
-        IQueryBuilder<IQuery<T>, T> ICommand<IQuery<T>, T>.Where(string fieldName, object value)
+        IConditionBuilder<IQuery<T>> ICommandBuilder<IQuery<T>>.Where(string fieldName, object value)
         {
             WhereInternal(fieldName, value);
             return this;
         }
 
-        IQueryBuilder<IQuery<T>, T> ICommand<IQuery<T>, T>.Where(string clause)
+        IConditionBuilder<IQuery<T>> ICommandBuilder<IQuery<T>>.Where(string clause)
         {
-            ClauseBuilder.AddWhere(clause);
+            CommandBuilder.AddWhere(clause);
             return this;
         }
 
-        IQuery<T> ICommandCommon<IQuery<T>>.Order(string clause)
+        IQuery<T> ICommandBuilderCommon<IQuery<T>>.Order(string clause)
         {
-            ClauseBuilder.OrderClause = clause;
+            CommandBuilder.OrderClause = clause;
             return this;
         }
 
-        IQuery<T> ICommandCommon<IQuery<T>>.Limit(int limit)
+        IQuery<T> ICommandBuilderCommon<IQuery<T>>.Limit(int limit)
         {
-            ClauseBuilder.Limit = limit;
+            CommandBuilder.Limit = limit;
             return this;
         }
 
-        IQuery<T> ICommandCommon<IQuery<T>>.Rollback(Action action)
+        IQuery<T> ICommandBuilderCommon<IQuery<T>>.Rollback(Action action)
         {
             Transaction.Rollback(action);
             return this;
         }
 
-        IQuery<T> ICommandCommon<IQuery<T>>.Param(string name, object value)
+        IQuery<T> ICommandBuilderCommon<IQuery<T>>.Param(string name, object value)
         {
             Param(name, value);
             return this;
         }
 
-        IQuery<T> ICommandCommon<IQuery<T>>.Param(IDbDataParameter parameter)
+        IQuery<T> ICommandBuilderCommon<IQuery<T>>.Param(IDbDataParameter parameter)
         {
             Param(parameter.ParameterName, parameter.Value);
             return this;
         }
 
-        IQuery<T> ICommandCommon<IQuery<T>>.Param(SimpleParameter parameter)
+        IQuery<T> ICommandBuilderCommon<IQuery<T>>.Param(SimpleParameter parameter)
         {
             Param(parameter.Name, parameter.Value);
             return this;
         }
 
-        IQuery<T> ICommandCommon<IQuery<T>>.Parameters(IEnumerable<IDbDataParameter> paramArray)
+        IQuery<T> ICommandBuilderCommon<IQuery<T>>.Parameters(IEnumerable<IDbDataParameter> paramArray)
         {
             Parameters(paramArray);
             return this;
         }
 
-        IQueryBuilder<Command<T>, T> IQueryBuilder<Command<T>, T>.Or(string clause)
+        Command<T> IConditionBuilder<Command<T>>.Or(string clause)
         {
-            ClauseBuilder.AddOr(clause);
+            CommandBuilder.AddOr(clause);
             return this;
         }
 
-        IQueryBuilder<Command<T>, T> IQueryBuilder<Command<T>, T>.Or(string fieldName, object value)
+        Command<T> IConditionBuilder<Command<T>>.Or(string fieldName, object value)
         {
             OrInternal(fieldName, value);
             return this;
         }
     }
 
-    public class Command : DbCommand, ITokenHolder, IQueryBuilder<Command>
+    public class Command : DbCommand, ITokenHolder, IQuery, IConditionBuilder<Command>
     {
         public Command(string commandText, Transaction transaction, bool isolated = true)
         {
@@ -121,7 +121,7 @@ namespace DBInline.Classes
             Connection = transaction.Connection;
             DbCommand = transaction.Connection.CreateCommand();
             DbCommand.Transaction = transaction.DbTransaction;
-            ClauseBuilder.CommandText = commandText;
+            CommandBuilder.CommandText = commandText;
             Transaction = transaction;
             Transaction.OnCommandCreated(this);
         }
@@ -134,7 +134,7 @@ namespace DBInline.Classes
         public new DatabaseConnection Connection { get; }
         public new Transaction Transaction { get; }
 
-        internal readonly ClauseBuilder ClauseBuilder = new ClauseBuilder();
+        internal readonly CommandBuilder CommandBuilder = new CommandBuilder();
 
         protected override DbConnection DbConnection { get; set; }
         protected override DbParameterCollection DbParameterCollection => DbCommand.Parameters;
@@ -143,8 +143,8 @@ namespace DBInline.Classes
 
         public override string CommandText
         {
-            get => ClauseBuilder.CommandText;
-            set => ClauseBuilder.CommandText = value;
+            get => CommandBuilder.CommandText;
+            set => CommandBuilder.CommandText = value;
         }
 
         public override int CommandTimeout
@@ -170,19 +170,19 @@ namespace DBInline.Classes
             get => DbCommand.DesignTimeVisible;
             set => DbCommand.DesignTimeVisible = value;
         }
-        public ICommandCommon<IQueryCommon> Common => this;
+        public ICommandBuilderCommon<IQueryCommon> BuilderCommon => this;
         Command IWrapCommand.Command => this;
         public CancellationToken Token => Transaction.Token;
 
         public Task<int> RunAsync()
         {
-            ClauseBuilder.BuildClauses(this);
+            CommandBuilder.BuildClauses(this);
             return DbCommand.ExecuteNonQueryAsync(Token);
         }
         
         public DataSet DataSet()
         {
-            ClauseBuilder.BuildClauses(this);
+            CommandBuilder.BuildClauses(this);
             var dt = new DataSet();
             using var da = new DataAdapter(this);
             da.Fill(dt);
@@ -191,7 +191,7 @@ namespace DBInline.Classes
 
         public async Task<DataSet> DataSetAsync()
         {
-            ClauseBuilder.BuildClauses(this);
+            CommandBuilder.BuildClauses(this);
             var dt = new DataSet();
             await using var da = new DataAdapter(this);
             await da.FillAsync(dt, Token).ConfigureAwait(false);
@@ -200,13 +200,13 @@ namespace DBInline.Classes
 
         public DbDataReader Reader()
         {
-            ClauseBuilder.BuildClauses(this);
+            CommandBuilder.BuildClauses(this);
             return ExecuteReader();
         }
 
         public DataTable Table()
         {
-            ClauseBuilder.BuildClauses(this);
+            CommandBuilder.BuildClauses(this);
             var dt = new DataTable();
             using var da = new DataAdapter(this);
             da.Fill(dt);
@@ -215,7 +215,7 @@ namespace DBInline.Classes
 
         public async Task<DataTable> TableAsync()
         {
-            ClauseBuilder.BuildClauses(this);
+            CommandBuilder.BuildClauses(this);
             var dt = new DataTable();
             await using var da = new DataAdapter(this);
             await da.FillAsync(dt, Token).ConfigureAwait(false);
@@ -224,7 +224,7 @@ namespace DBInline.Classes
 
         public Task<DbDataReader> ReaderAsync()
         {
-            ClauseBuilder.BuildClauses(this);
+            CommandBuilder.BuildClauses(this);
             return DbCommand.ExecuteReaderAsync(Token);
         }
         public override void Cancel()
@@ -257,7 +257,7 @@ namespace DBInline.Classes
 
         public IEnumerable<TOut> Select<TOut>(Func<IDataReader, TOut> transform)
         {
-            ClauseBuilder.BuildClauses(this);
+            CommandBuilder.BuildClauses(this);
             using var r = ExecuteReader();
             while (r.Read())
             {
@@ -280,7 +280,7 @@ namespace DBInline.Classes
 
         public async IAsyncEnumerable<TOut> SelectAsyncEnumerable<TOut>(Func<IDataReader, TOut> transform)
         {
-            ClauseBuilder.BuildClauses(this);
+            CommandBuilder.BuildClauses(this);
             await using var r = await ExecuteReaderAsync(Token);
             while (r.Read())
             {
@@ -317,19 +317,19 @@ namespace DBInline.Classes
 
         public override int ExecuteNonQuery()
         {
-            ClauseBuilder.BuildClauses(this);
+            CommandBuilder.BuildClauses(this);
             return DbCommand.ExecuteNonQuery();
         }
 
         public override object ExecuteScalar()
         {
-            ClauseBuilder.BuildClauses(this);
+            CommandBuilder.BuildClauses(this);
             return DbCommand.ExecuteScalar();
         }
 
         public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
         {
-            ClauseBuilder.BuildClauses(this);
+            CommandBuilder.BuildClauses(this);
             return base.ExecuteScalarAsync(cancellationToken);
         }
 
@@ -351,23 +351,23 @@ namespace DBInline.Classes
 
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
         {
-            ClauseBuilder.BuildClauses(this);
+            CommandBuilder.BuildClauses(this);
             return DbCommand.ExecuteReader();
         }
 
         IQuery IQuery.Set(string text)
         {
-            ClauseBuilder.CommandText = text;
+            CommandBuilder.CommandText = text;
             return this;
         }
 
-        IQuery ICommandCommon<IQuery>.Rollback(Action action)
+        IQuery ICommandBuilderCommon<IQuery>.Rollback(Action action)
         {
             Transaction.Rollback(action);
             return this;
         }
 
-        IQuery ICommandCommon<IQuery>.Param(string name, object value)
+        IQuery ICommandBuilderCommon<IQuery>.Param(string name, object value)
         {
             CreateParameter(name, value);
             return this;
@@ -385,7 +385,7 @@ namespace DBInline.Classes
             return this;
         }
 
-        IQuery ICommandCommon<IQuery>.Parameters(IEnumerable<IDbDataParameter> paramArray)
+        IQuery ICommandBuilderCommon<IQuery>.Parameters(IEnumerable<IDbDataParameter> paramArray)
         {
             foreach (var dbDataParameter in paramArray)
             {
@@ -397,22 +397,22 @@ namespace DBInline.Classes
 
         public IQuery Order(string clause)
         {
-            ClauseBuilder.AddOr(clause);
+            CommandBuilder.AddOr(clause);
             return this;
         }
 
         public IQuery Limit(int limit)
         {
-            ClauseBuilder.Limit = limit;
+            CommandBuilder.Limit = limit;
             return this;
         }
         
-        IQueryBuilder<IQuery> ICommand<IQuery>.Where(string clause)
+        IConditionBuilder<IQuery> ICommandBuilder<IQuery>.Where(string clause)
         {
             return Where(clause);
         }
 
-        IQueryBuilder<IQuery> ICommand<IQuery>.Where(string fieldName, object value)
+        IConditionBuilder<IQuery> ICommandBuilder<IQuery>.Where(string fieldName, object value)
         {
             WhereInternal(fieldName, value);
             return this;
@@ -432,31 +432,31 @@ namespace DBInline.Classes
             Where($"{fieldName}={name}");
         }
         
-        private IQueryBuilder<Command> Where(string whereString)
+        private IConditionBuilder<Command> Where(string whereString)
         {
-            ClauseBuilder.AddWhere(whereString);
+            CommandBuilder.AddWhere(whereString);
             return this;
         }
         
-        IQuery ICommandCommon<IQuery>.Limit(int limit)
+        IQuery ICommandBuilderCommon<IQuery>.Limit(int limit)
         {
-            ClauseBuilder.Limit = limit;
+            CommandBuilder.Limit = limit;
             return this;
         }
 
-        IQuery ICommandCommon<IQuery>.Order(string clause)
+        IQuery ICommandBuilderCommon<IQuery>.Order(string clause)
         {
-            ClauseBuilder.OrderClause = clause;
+            CommandBuilder.OrderClause = clause;
             return this;
         }
         
-        IQuery ICommandCommon<IQuery>.Param(IDbDataParameter parameter)
+        IQuery ICommandBuilderCommon<IQuery>.Param(IDbDataParameter parameter)
         {
             CreateParameter(parameter.ParameterName, parameter.Value);
             return this;
         }
 
-        IQuery ICommandCommon<IQuery>.Param(SimpleParameter parameter)
+        IQuery ICommandBuilderCommon<IQuery>.Param(SimpleParameter parameter)
         {
             CreateParameter(parameter.Name, parameter.Value);
             return this;
@@ -503,13 +503,13 @@ namespace DBInline.Classes
         }
         
 
-        IQueryBuilder<Command> IQueryBuilder<Command>.Or(string clause)
+        Command IConditionBuilder<Command>.Or(string clause)
         {
-            ClauseBuilder.AddOr(clause);
+            CommandBuilder.AddOr(clause);
             return this;
         }
 
-        IQueryBuilder<Command> IQueryBuilder<Command>.Or(string fieldName, object value)
+        Command IConditionBuilder<Command>.Or(string fieldName, object value)
         {
             OrInternal(fieldName, value);
             return this;
@@ -518,7 +518,7 @@ namespace DBInline.Classes
         protected void OrInternal(string fieldName, object value)
         {
             var name = GenerateParam(fieldName, value);
-            ClauseBuilder.AddOr($"{fieldName}={name}");
+            CommandBuilder.AddOr($"{fieldName}={name}");
         }
     }
 }

@@ -1,13 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Data;
 using System.Linq;
-using System.Net.Http.Headers;
-using DBInline.Classes;
 
-
-namespace DBInline.Interfaces
+namespace DBInline.Classes
 {
-    internal class ClauseBuilder
+    internal class CommandBuilder
     {
         private readonly List<string> _whereClauses = new List<string>();
 
