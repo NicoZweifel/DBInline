@@ -23,13 +23,12 @@ namespace DBInline.Test
                     .Set(DeleteQuery)
                     .Run();
 
-                var selCount = p.Query()
+                var l = p.Query()
                     .Set(SelectQuery)
                     .Select(x => x)
-                    .ToList()
-                    .Count;
+                    .ToList();
 
-                Assert.IsTrue(selCount == 0, "Table should be empty.");
+                Assert.IsTrue(!l.Any(), "Table should be empty.");
 
                 throw new TestException();
                 // ReSharper disable once HeuristicUnreachableCode
@@ -49,7 +48,7 @@ namespace DBInline.Test
                         .ToList();
                 });
                 
-                Assert.IsTrue(l.Count > 0, "Rollback has failed!");
+                Assert.IsTrue(!l.Any(), "Rollback has failed!");
             }
             Assert.Pass();
         }
@@ -67,13 +66,12 @@ namespace DBInline.Test
                         .RunAsync()
                         .ConfigureAwait(false);
 
-                    var selCount = p.Query()
+                    var l = p.Query()
                         .Set(SelectQuery)
                         .Select(x => x)
-                        .ToList()
-                        .Count;
+                        .ToList();
 
-                    Assert.IsTrue(selCount == 0, "Table should be empty.");
+                    Assert.IsTrue(!l.Any(), "Table should be empty.");
 
                     throw new TestException();
                     // ReSharper disable once HeuristicUnreachableCode
@@ -93,7 +91,7 @@ namespace DBInline.Test
                         .Select(x => (int) x[0])
                         .ToList();
                 });
-                Assert.IsTrue(l.Count > 0, "Rollback has failed!");
+                Assert.IsTrue(!l.Any(), "Rollback has failed!");
             }
             Assert.Pass();
         }
@@ -114,6 +112,7 @@ namespace DBInline.Test
                         .Select(x => x)
                         .ToList()
                         .Count;
+                    
                     Assert.IsTrue(selCount == 0, "Table should be empty.");
                     
                     throw new TestException();
@@ -132,7 +131,7 @@ namespace DBInline.Test
                         .ToList();
                 });
                 
-                Assert.IsTrue(l.Count > 0, "Rollback has failed!");
+                Assert.IsTrue(!l.Any(), "Rollback has failed!");
             }
             Assert.Pass();
         }
@@ -149,13 +148,13 @@ namespace DBInline.Test
                         .RunAsync()
                         .ConfigureAwait(false);
 
-                    var selCount = (await p.Query()
+                    var count = (await p.Query()
                             .Set(SelectQuery)
                             .SelectAsync(x => x)
                             .ConfigureAwait(false))
                         .Count;
 
-                    Assert.IsTrue(selCount == 0, "Table should be empty.");
+                    Assert.IsTrue(count == 0, "Table should be empty.");
                     
                     throw new TestException();
                     
@@ -173,7 +172,7 @@ namespace DBInline.Test
                         .ToList();
                 }).ConfigureAwait(false);
                 
-                Assert.IsTrue(l.Count > 0, "Rollback has failed!");
+                Assert.IsTrue(!l.Any(), "Rollback has failed!");
             }
             Assert.Pass();
         }
@@ -205,7 +204,7 @@ namespace DBInline.Test
                         .ToList();
                 });
                 
-                Assert.IsTrue(l.Count > 0, "Rollback has failed!");
+                Assert.IsTrue(!l.Any(), "Rollback has failed!");
             }
             Assert.Pass();
         }
@@ -237,7 +236,7 @@ namespace DBInline.Test
                         .ToList();
                 }).ConfigureAwait(false);
                 
-                Assert.IsTrue(l.Count > 0, "Rollback has failed!");
+                Assert.IsTrue(!l.Any(), "Rollback has failed!");
             }
             Assert.Pass();
         }

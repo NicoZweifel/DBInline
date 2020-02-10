@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using static DBInline.Extensions;
 
@@ -52,7 +53,8 @@ namespace DBInline.Test
 
                 await foreach (var x in p.Query()
                     .Set(SelectQuery)
-                    .SelectAsyncEnumerable(x => (string) x[1]))
+                    .SelectAsyncEnumerable(x => (string) x[1])
+                    .ConfigureAwait(false))
                 {
                     list.Add(x);
                 }
