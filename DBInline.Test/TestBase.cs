@@ -13,7 +13,7 @@ namespace DBInline.Test
     public class TestBase
     {
         /// <summary>
-        /// Place credentials in Environment.CurrentDirectory + "creds\\data.json")
+        /// Place credentials in Environment.CurrentDirectory + "credentials\\data.json")
         /// </summary>
         [SetUp]
         public void Setup()
@@ -29,7 +29,7 @@ namespace DBInline.Test
             var credentials = JsonSerializer.Deserialize<DatabaseCredentials[]>(
                 File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "credentials\\data.json")));
             //TODO Move names to json
-            ContextController.AddContext("postgres", credentials.First().Type, credentials.First().GetConnectionString(), true);
+            ContextController.AddContext("postgres", credentials.First().Type, credentials.First().GetConnectionString(),true);
             ContextController.AddContext("MsSql", credentials.Last().Type, credentials.Last().GetConnectionString());
         }
 

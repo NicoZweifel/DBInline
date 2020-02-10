@@ -5,26 +5,32 @@ namespace DBInline.Classes.Transactions
 {
     internal class ManagedTransaction : Transaction
     {
-        private readonly Pool _pool;
         public ManagedTransaction(Pool pool) : base(pool.Connection())
         {
-            ConnectionSource = this;
-            _pool = pool;
+            TransactionCreated += pool.OnTransactionCreated;
+            CommandCreated += pool.OnCommandCreated;
+            ConnectionSource = pool;
+            OnTransactionCreated(this);
         }
         public ManagedTransaction(Pool pool, string dataBase) : base(pool.Connection(dataBase))
         {
-            ConnectionSource = this;
-            _pool = pool;
+            TransactionCreated += pool.OnTransactionCreated;
+            CommandCreated += pool.OnCommandCreated;
+            ConnectionSource = pool;
         }
 
         internal ManagedTransaction(IConnectionSource connection) : base(connection)
         {
+            TransactionCreated += connection.OnTransactionCreated;
+            CommandCreated += connection.OnCommandCreated;
+            ConnectionSource = connection;
         }
 
         internal ManagedTransaction(IConnectionSource connection, string databaseName) : base(connection, databaseName)
         {
+            TransactionCreated += connection.OnTransactionCreated;
+            CommandCreated += connection.OnCommandCreated;
+            ConnectionSource = connection;
         }
-
-        internal Pool Pool => _pool;
     }
 }

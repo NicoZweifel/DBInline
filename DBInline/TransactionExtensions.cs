@@ -27,6 +27,7 @@ namespace DBInline
                 return 0;
             });
         }
+
         /// <summary>
         /// Creates/Rollbacks/Disposes Transaction
         /// </summary>
@@ -171,6 +172,7 @@ namespace DBInline
             var handleTransaction = transaction == null && ts == null && @this == null;
             var conn = tran.Connection;
             if (conn.State == ConnectionState.Closed) conn.Open();
+            tran.OnTransactionCreated(tran);
             if (tran.DbTransaction == null )
             {
                 tran.DbTransaction = conn.BeginTransaction();

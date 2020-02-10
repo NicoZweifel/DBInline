@@ -2,9 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Bson;
 using NUnit.Framework;
-using Renci.SshNet.Messages.Connection;
 using static DBInline.Extensions;
 
 namespace DBInline.Test
@@ -20,6 +18,7 @@ namespace DBInline.Test
             try
             {
                 using var p = Pool();
+                
                 p.Query()
                     .Set(DeleteQuery)
                     .Run();
@@ -41,6 +40,7 @@ namespace DBInline.Test
             catch (Exception e)
             {
                 Debug.Write(e.ToString());
+                
                 var l = Transaction(t =>
                 {
                     return t.Query()
@@ -48,6 +48,7 @@ namespace DBInline.Test
                         .Select(x => (int) x[0])
                         .ToList();
                 });
+                
                 Assert.IsTrue(l.Count > 0, "Rollback has failed!");
             }
             Assert.Pass();
@@ -114,16 +115,15 @@ namespace DBInline.Test
                         .ToList()
                         .Count;
                     Assert.IsTrue(selCount == 0, "Table should be empty.");
+                    
                     throw new TestException();
-                    // ReSharper disable once HeuristicUnreachableCode
-#pragma warning disable 162
-                    p.Commit();
-#pragma warning restore 162
+                    
                 }).ConfigureAwait(false);
             }
             catch (Exception e)
             {
                 Debug.Write(e.ToString());
+                
                 var l = Transaction(t =>
                 {
                     return t.Query()
@@ -131,6 +131,7 @@ namespace DBInline.Test
                         .Select(x => (int) x[0])
                         .ToList();
                 });
+                
                 Assert.IsTrue(l.Count > 0, "Rollback has failed!");
             }
             Assert.Pass();
@@ -155,16 +156,15 @@ namespace DBInline.Test
                         .Count;
 
                     Assert.IsTrue(selCount == 0, "Table should be empty.");
+                    
                     throw new TestException();
-                    // ReSharper disable once HeuristicUnreachableCode
-#pragma warning disable 162
-                    p.Commit();
-#pragma warning restore 162
+                    
                 }).ConfigureAwait(false);
             }
             catch (Exception e)
             {
                 Debug.Write(e.ToString());
+                
                 var l = await TransactionAsync(t =>
                 {
                     return t.Query()
@@ -172,6 +172,7 @@ namespace DBInline.Test
                         .Select(x => (int) x[0])
                         .ToList();
                 }).ConfigureAwait(false);
+                
                 Assert.IsTrue(l.Count > 0, "Rollback has failed!");
             }
             Assert.Pass();
@@ -187,12 +188,15 @@ namespace DBInline.Test
                     t.Query()
                         .Set(DeleteQuery)
                         .Run();
+                    
                     throw new TestException();
+                    
                 });
             }
             catch (Exception e)
             {
                 Debug.Write(e.ToString());
+                
                 var l = Transaction(t =>
                 {
                     return t.Query()
@@ -200,6 +204,7 @@ namespace DBInline.Test
                         .Select(x => (int) x[0])
                         .ToList();
                 });
+                
                 Assert.IsTrue(l.Count > 0, "Rollback has failed!");
             }
             Assert.Pass();
@@ -215,12 +220,15 @@ namespace DBInline.Test
                     t.Query()
                         .Set(DeleteQuery)
                         .Run();
+                    
                     throw new TestException();
+                    
                 }).ConfigureAwait(false);
             }
             catch (Exception e)
             {
                 Debug.Write(e.ToString());
+                
                 var l = await TransactionAsync(t =>
                 {
                     return t.Query()
@@ -228,6 +236,7 @@ namespace DBInline.Test
                         .Select(x => (int) x[0])
                         .ToList();
                 }).ConfigureAwait(false);
+                
                 Assert.IsTrue(l.Count > 0, "Rollback has failed!");
             }
             Assert.Pass();

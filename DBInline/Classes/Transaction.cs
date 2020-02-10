@@ -40,6 +40,7 @@ namespace DBInline.Classes
             internal Transaction(IConnectionSource connection, string databaseName)
         {
             Connection = connection.Connection(databaseName);
+            CommandCreated += connection.OnCommandCreated;
         }
 
 

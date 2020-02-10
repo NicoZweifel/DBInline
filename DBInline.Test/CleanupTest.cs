@@ -11,13 +11,10 @@ namespace DBInline.Test
         public void CleanupTest()
         {
             using var p = Pool();
-
             p.Query()
                 .Set(DropQuery)
                 .Run();
-
             p.Commit();
-            
             Assert.Pass();
         }
     }

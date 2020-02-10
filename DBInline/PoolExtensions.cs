@@ -15,12 +15,13 @@ namespace DBInline
         /// <param name="body">Execution body.</param>
         public static void Pool(this IConnectionSource @this, Action<IPool> body)
         {
-            @this.Pool(p=>
+            @this.Pool(p =>
             {
                 body(p);
                 return 0;
             });
         }
+
         /// <summary>
         /// Groups Transactions/Connections./Connections.
         /// </summary>
@@ -28,17 +29,18 @@ namespace DBInline
         {
             return new Pool();
         }
+
         /// <summary>
         /// Groups Transactions/Connections./Connections.
         /// </summary>
         /// <param name="body">Execution body."></param>
         public static void Pool(Action<IPool> body)
         {
-             ContextController.DefaultContext.Pool(p=>
-             {
-                  body(p);
-                  return 0;
-             });
+            ContextController.DefaultContext.Pool(p =>
+            {
+                body(p);
+                return 0;
+            });
         }
 
         /// <summary>
@@ -46,22 +48,11 @@ namespace DBInline
         /// </summary>
         /// <param name="this">Connection Source</param>
         /// <param name="body">Execution body.</param>
-        public static T Pool<T>(this IConnectionSource  @this, Func<IPool, T> body)
+        public static T Pool<T>(this IConnectionSource @this, Func<IPool, T> body)
         {
             using var pool = new Pool(@this);
-            try
-            {
-                var res = body(pool);
-                return res;
-            }
-            catch (Exception ex)
-            {
-                if (ex.GetType() != typeof(Pool.PoolCanceledException))
-                {
-                    throw new AggregateException("Failed to run Pool.", ex);
-                }
-                throw;
-            }
+            var res = body(pool);
+            return res;
         }
 
         /// <summary>
@@ -70,7 +61,7 @@ namespace DBInline
         /// <param name="body">Execution body."></param>
         public static T Pool<T>(Func<IPool, T> body)
         {
-            return Pool(null,body);
+            return Pool(null, body);
         }
 
         /// <summary>
@@ -88,19 +79,9 @@ namespace DBInline
                 {
                     TokenSource = source
                 };
-                try
-                {
-                    var res = body(pool);
-                    return res;
-                }
-                catch (Exception ex)
-                {
-                    if ( ex.GetType() != typeof (Pool.PoolCanceledException))
-                    {
-                        throw new AggregateException("Failed to run Pool.", ex);
-                    }
-                    throw;
-                }
+                var res = body(pool);
+                pool.Commit();
+                return res;
             }, token);
         }
 
@@ -119,21 +100,12 @@ namespace DBInline
                 {
                     TokenSource = source
                 };
-                try
-                {
-                    var res =await body(pool);
-                    return res;
-                }
-                catch (Exception ex)
-                {
-                    if ( ex.GetType() != typeof (Pool.PoolCanceledException))
-                    {
-                        throw new AggregateException("Failed to run Pool.", ex);
-                    }
-                    throw;
-                }
+                var res = await body(pool);
+                pool.Commit();
+                return res;
             }, token);
         }
+
         /// <summary>
         /// Groups Transactions/Connections.
         /// </summary>
@@ -142,6 +114,7 @@ namespace DBInline
         {
             return PoolAsync(null, body);
         }
+
         /// <summary>
         /// Groups Transactions/Connections.
         /// </summary>
@@ -150,14 +123,14 @@ namespace DBInline
         {
             return PoolAsync(null, body);
         }
-        
+
         /// <summary>
         /// Groups Transactions/Connections.
         /// </summary>
         /// <param name="body">Execution body."></param>
         public static async Task PoolAsync(Action<IPool> body)
         {
-            await PoolAsync(null, p=>
+            await PoolAsync(null, p =>
             {
                 body(p);
                 return 0;
