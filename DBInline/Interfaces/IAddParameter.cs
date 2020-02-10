@@ -10,12 +10,12 @@ namespace DBInline.Interfaces
 {
     public interface  IAddRollBack
     {
-        public IAddRollBack AddRollback(Action action);
+        public IAddRollBack Rollback(Action action);
     }
     public delegate void RollbackAdded(Action a);
     public interface  IAddParameter 
     {
         public  IAddParameter Param(string name, object value);
-        public IAddParameter AddParameters(IEnumerable<IDbDataParameter> paramArray);
+        public IAddParameter Parameters(IEnumerable<IDbDataParameter> paramArray);
     }
 }

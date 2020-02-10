@@ -12,7 +12,9 @@ namespace DBInline.Interfaces
         public void OnTransactionCreated(Transaction transaction);
         // ReSharper disable once EventNeverSubscribedTo.Global
         public event TransactionCreated TransactionCreated;
+        // ReSharper disable once UnusedMemberInSuper.Global
         public void OnTransactionWrapped(Transaction transaction);
+        // ReSharper disable once EventNeverSubscribedTo.Global
         public event TransactionWrapped TransactionWrapped;
         public void OnCommandCreated(Command command);
         public event CommandCreated CommandCreated;
