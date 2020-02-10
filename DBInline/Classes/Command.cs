@@ -1,171 +1,120 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using DBInline.Classes.Transactions;
 using DBInline.Interfaces;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using MySql.Data.MySqlClient;
-using MySqlX.XDevAPI.Relational;
 using Npgsql;
-using SQLitePCL;
-using static DBInline.Extensions;
 
 namespace DBInline.Classes
 {
-    internal class Command<T> : Command, IQuery<T> , ICommandBehaviour<Command<T>>
+    internal class Command<T> : Command, IQueryBuilder<Command<T>, T>
     {
         public Command(string commandText, Transaction transaction) : base(commandText, transaction)
         {
         }
-        public new IQuery<T> Set(string text)
+
+        public new T Scalar()
         {
-            ClauseBuilder.CommandText = text;
-            return this;
-        }
-        public T Scalar()
-        {
-            ClauseBuilder.BuildClauses(this);
             var res = ExecuteScalar();
             if (res == DBNull.Value)
             {
                 return default;
             }
-            return (T)res;
+
+            return (T) res;
         }
-        public async Task<T> ScalarAsync()
-        { 
-            ClauseBuilder.BuildClauses(this);
-            var res = await ExecuteScalarAsync(Token).ConfigureAwait(false); 
+
+        public new async Task<T> ScalarAsync()
+        {
+            var res = await ExecuteScalarAsync(Token).ConfigureAwait(false);
             if (res == DBNull.Value)
             {
                 return default;
             }
-            return (T)res;
+
+            return (T) res;
         }
-        public new IEnumerable<TOut> Select<TOut>(Func<IDataReader, TOut> transform)
+        
+        IQuery<T> IQuery<T>.Set(string text)
         {
-            ClauseBuilder.BuildClauses(this);
-            using var r = ExecuteReader();
-            while (r.Read())
-            {
-               yield return transform(r);
-            }
-            r.Close();
-        }
-        public new async IAsyncEnumerable<TOut> SelectAsync<TOut>(Func<IDataReader, TOut> transform)
-        {
-            ClauseBuilder.BuildClauses(this);
-            await using var r = ExecuteReader();
-            while (await r.ReadAsync())
-            {
-                yield return transform(r);
-            }
-            await r.CloseAsync().ConfigureAwait(false);
-        }
-        Command<T> ICommandBehaviour<Command<T>>.Set(string text)
-        {
-             Set(text);
-             return this;
-        }
-        IQuery<T> ICommandBehaviour<IQuery<T>>.AddRollback(Action action)
-        {
-             AddRollback(action);
-             return this;
-        }
-        Command<T> ICommandBehaviour<Command<T>>.Param(string name, object value)
-        {
-            Param(name, value);
+            ClauseBuilder.CommandText = text;
             return this;
         }
-        Command<T> ICommandBehaviour<Command<T>>.Param(IDbDataParameter parameter)
+
+        IQueryBuilder<IQuery<T>, T> ICommand<IQuery<T>, T>.Where(string fieldName, object value)
         {
-            Param(parameter.ParameterName,parameter.Value);
+            WhereInternal(fieldName, value);
             return this;
         }
-        Command<T> ICommandBehaviour<Command<T>>.Param(SimpleParameter parameter)
+
+        IQueryBuilder<IQuery<T>, T> ICommand<IQuery<T>, T>.Where(string clause)
         {
-            Param(parameter.Name,parameter.Value);
+            ClauseBuilder.AddWhere(clause);
             return this;
         }
-        IQuery<T> ICommandBehaviour<IQuery<T>>.Param(IDbDataParameter parameter)
+
+        IQuery<T> ICommandCommon<IQuery<T>>.Order(string clause)
         {
-            Param(parameter.ParameterName,parameter.Value);
+            ClauseBuilder.OrderClause = clause;
             return this;
         }
-        IQuery<T> ICommandBehaviour<IQuery<T>>.Param(SimpleParameter parameter)
-        {
-            Param(parameter.Name,parameter.Value);
-            return this;
-        }
-        Command<T> ICommandBehaviour<Command<T>>.AddParameters(IEnumerable<IDbDataParameter> paramArray)
-        {
-            AddParameters(paramArray);
-            return this;
-        }
-        Command<T> ICommandBehaviour<Command<T>>.Where(string whereString)
-        {
-            ClauseBuilder.AddToWhereString(whereString);
-            return this;
-        }
-        IQuery<T> ICommandBehaviour<IQuery<T>>.Where(string whereString)
-        {
-            ClauseBuilder.AddToWhereString(whereString);
-            return this;
-        }
-        Command<T> ICommandBehaviour<Command<T>>.Order(string orderClause)
-        {
-            ClauseBuilder.OrderClause = orderClause;
-            return this;
-        }
-        IQuery<T> ICommandBehaviour<IQuery<T>>.Order(string orderClause)
-        {
-            ClauseBuilder.OrderClause = orderClause;
-            return this;
-        }
-        Command<T> ICommandBehaviour<Command<T>>.Limit(int limit)
+
+        IQuery<T> ICommandCommon<IQuery<T>>.Limit(int limit)
         {
             ClauseBuilder.Limit = limit;
             return this;
         }
-        IQuery<T> ICommandBehaviour<IQuery<T>>.Limit(int limit)
+
+        IQuery<T> ICommandCommon<IQuery<T>>.Rollback(Action action)
         {
-            ClauseBuilder.Limit = limit;
+            Transaction.Rollback(action);
             return this;
         }
-        Command<T> ICommandBehaviour<Command<T>>.AddRollback(Action action)
-        {
-            AddRollback(action);
-            return this;
-        }
-        IQuery<T> ICommandBehaviour<IQuery<T>>.Param(string name, object value)
+
+        IQuery<T> ICommandCommon<IQuery<T>>.Param(string name, object value)
         {
             Param(name, value);
             return this;
         }
-        IQuery<T> ICommandBehaviour<IQuery<T>>.AddParameters(IEnumerable<IDbDataParameter> paramArray)
+
+        IQuery<T> ICommandCommon<IQuery<T>>.Param(IDbDataParameter parameter)
         {
-            AddParameters(paramArray);
+            Param(parameter.ParameterName, parameter.Value);
+            return this;
+        }
+
+        IQuery<T> ICommandCommon<IQuery<T>>.Param(SimpleParameter parameter)
+        {
+            Param(parameter.Name, parameter.Value);
+            return this;
+        }
+
+        IQuery<T> ICommandCommon<IQuery<T>>.Parameters(IEnumerable<IDbDataParameter> paramArray)
+        {
+            Parameters(paramArray);
+            return this;
+        }
+
+        IQueryBuilder<Command<T>, T> IQueryBuilder<Command<T>, T>.Or(string clause)
+        {
+            ClauseBuilder.AddOr(clause);
+            return this;
+        }
+
+        IQueryBuilder<Command<T>, T> IQueryBuilder<Command<T>, T>.Or(string fieldName, object value)
+        {
+            OrInternal(fieldName, value);
             return this;
         }
     }
-    public class Command : DbCommand, IQuery, IQueryBuilder, ITokenHolder
+
+    public class Command : DbCommand, ITokenHolder, IQueryBuilder<Command>
     {
-        private readonly bool _isolated;
-        internal readonly DbCommand DbCommand;
-        public new DatabaseConnection Connection { get; }
-
-        // ReSharper disable once MemberCanBePrivate.Global
-        public new Transaction Transaction { get; }
-
-        protected readonly ClauseBuilder ClauseBuilder = new ClauseBuilder();
         public Command(string commandText, Transaction transaction, bool isolated = true)
         {
             _isolated = isolated;
@@ -177,97 +126,21 @@ namespace DBInline.Classes
             Transaction.OnCommandCreated(this);
         }
         
-        public override void Cancel()
-        {
-            DbCommand.Cancel();
-        }
-        public  T Scalar<T>()
-        {
-            ClauseBuilder.BuildClauses(this);
-            var res = (T) ExecuteScalar();
-            return res;
-        }
+        private readonly bool _isolated;
 
-        public async Task<T> ScalarAsync<T>()
-        {
-            ClauseBuilder.BuildClauses(this);
-            var res =(T) await ExecuteScalarAsync(Token);
-            return res;
-        }
+        internal readonly DbCommand DbCommand;
 
-        public IEnumerable<TOut> Select<TOut>(Func<IDataReader, TOut> transform)
-        {
-            ClauseBuilder.BuildClauses(this);
-            using var r = ExecuteReader();
-            while (r.Read())
-            {
-                yield return transform(r);
-            }
-            r.Close();
-        }
+        private int _generatedParamId;
+        public new DatabaseConnection Connection { get; }
+        public new Transaction Transaction { get; }
 
-        public async IAsyncEnumerable<TOut> SelectAsync<TOut>(Func<IDataReader, TOut> transform)
-        {
-            ClauseBuilder.BuildClauses(this);
-            await using var r = await ExecuteReaderAsync(Token);
-            while (r.Read())
-            {
-                yield return transform(r);
-            }
-            await r.CloseAsync().ConfigureAwait(false);
-        }
+        internal readonly ClauseBuilder ClauseBuilder = new ClauseBuilder();
 
-        // ReSharper disable once MemberCanBePrivate.Global
-        internal Parameter CreateParameter(string name, object value)
-        {
-            var param = Connection.DbType switch
-            {
-                Database.Mssql => new Parameter(this, new SqlParameter(name, value)),
-                Database.Postgres => new Parameter(this, new NpgsqlParameter(name, value)),
-                Database.Mysql => new Parameter(this, new MySqlParameter(name, value)),
-                Database.SqlLite => new Parameter(this, new SqliteParameter(name, value)),
-                _ => new Parameter(DbCommand.CreateParameter())
-            };
-            Parameters.Add(param.DbParameter);
-            return param;
-        }
- 
-        
-        public int Run()
-        {
-            ClauseBuilder.BuildClauses(this);
-            var res = ExecuteNonQuery();
-            return res;
-        }
-        public object RunScalar()
-        {
-            ClauseBuilder.BuildClauses(this);
-            var res = ExecuteScalar();
-            return res;
-        }
-        public override int ExecuteNonQuery()
-        {
-            ClauseBuilder.BuildClauses(this);
-            return DbCommand.ExecuteNonQuery();
-        }
+        protected override DbConnection DbConnection { get; set; }
+        protected override DbParameterCollection DbParameterCollection => DbCommand.Parameters;
 
-        public override object ExecuteScalar()
-        {
-            ClauseBuilder.BuildClauses(this);
-            return DbCommand.ExecuteScalar();
-        }
+        protected override DbTransaction DbTransaction { get; set; }
 
-        public override void Prepare()
-        {
-            DbCommand.Prepare();
-        }
-        
-        public new void Dispose()
-        {
-            DbCommand.Dispose();
-            if(_isolated) Transaction.Dispose();
-        }
-        
         public override string CommandText
         {
             get => ClauseBuilder.CommandText;
@@ -292,175 +165,14 @@ namespace DBInline.Classes
             set => DbCommand.UpdatedRowSource = value;
         }
 
-        protected override DbConnection DbConnection { get; set; }
-        protected override DbParameterCollection DbParameterCollection => DbCommand.Parameters;
-        protected override DbTransaction DbTransaction { get; set; }
-
         public override bool DesignTimeVisible
         {
             get => DbCommand.DesignTimeVisible;
             set => DbCommand.DesignTimeVisible = value;
         }
-
-        protected override DbParameter CreateDbParameter()
-        {
-            return DbCommand.CreateParameter();
-        }
-
-        protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
-        {
-            ClauseBuilder.BuildClauses(this);
-            return DbCommand.ExecuteReader();
-        }
-
-        public CancellationToken Token => Transaction.Token;
-
-        public IQueryBuilder Set(string text)
-        {
-            ClauseBuilder.CommandText = text;
-            return this;
-        }
-
-        IQuery ICommandBehaviour<IQuery>.Set(string text)
-        {
-             Set(text);
-             return this;
-        }
-
-        public IQuery AddRollback(Action action)
-        {
-            Transaction.AddRollback(action);
-            return this;
-        }
-
-        IQuery ICommandBehaviour<IQuery>.Param(string name, object value)
-        {
-            CreateParameter(name,value);
-            return this;
-        }
-
-        IQuery ICommandBehaviour<IQuery>.AddParameters(IEnumerable<IDbDataParameter> paramArray)
-        {
-            foreach (var dbDataParameter in paramArray)
-            {
-                CreateParameter(dbDataParameter.ParameterName,dbDataParameter.Value);
-            }
-            return this;
-        }
-
-        public IQueryBuilder Where(string whereClause)
-        {
-            ClauseBuilder.AddToWhereString(whereClause);
-            return this;
-        }
-        
-        IQuery ICommandBehaviour<IQuery>.Where(string whereString)
-        {
-            ClauseBuilder.AddToWhereString(whereString);
-            return this;
-        }
-
-        public IQueryBuilder Order(string orderClause)
-        {
-            ClauseBuilder.OrderClause = orderClause;
-            return this;
-        }
-
-        IQueryBuilder ICommandBehaviour<IQueryBuilder>.Limit(int limit)
-        {
-            ClauseBuilder.Limit = limit;
-            return this;
-        }
-
-        IQuery ICommandBehaviour<IQuery>.Limit(int limit)
-        {
-            ClauseBuilder.Limit = limit;
-            return this;
-        }
-
-        IQuery ICommandBehaviour<IQuery>.Order(string orderClause)
-        {
-            ClauseBuilder.OrderClause = orderClause;
-            return this;
-        }
-
-
-        IQuery ICommandBehaviour<IQuery>.Param(IDbDataParameter parameter)
-        {
-            CreateParameter(parameter.ParameterName,parameter.Value);
-            return this;
-        }
-
-        IQuery ICommandBehaviour<IQuery>.Param(SimpleParameter parameter)
-        {
-            CreateParameter(parameter.Name,parameter.Value);
-            return this;
-        }
-
-        IQueryBuilder ICommandBehaviour<IQueryBuilder>.Param(string name, object value)
-        {
-            CreateParameter(name,value);
-            return this;
-        }
-
-        public IQueryBuilder Param(IDbDataParameter parameter)
-        {
-            CreateParameter(parameter.ParameterName,parameter.Value);
-            return this;
-        }
-
-        public IQueryBuilder Param(SimpleParameter parameter)
-        {
-            CreateParameter(parameter.Name,parameter.Value);
-            return this;
-        }
-
-        IQueryBuilder ICommandBehaviour<IQueryBuilder>.AddParameters(IEnumerable<IDbDataParameter> paramArray)
-        {
-            AddParameters(paramArray);
-            return this;
-        }
-
-        IAddRollBack IAddRollBack.AddRollback(Action action)
-        {
-             AddRollback(action);
-             return this;
-        }
-
-        IQueryBuilder ICommandBehaviour<IQueryBuilder>.AddRollback(Action action)
-        {
-             AddRollback(action);
-             return this;
-        }
-
-        public IAddParameter Param(string name, object value)
-        {
-            CreateParameter(name,value);
-            return this;
-        }
-
-        public IAddParameter AddParameters(IEnumerable<IDbDataParameter> paramArray)
-        {
-            foreach (var dbDataParameter in paramArray)
-            {
-                CreateParameter(dbDataParameter.ParameterName,dbDataParameter.Value);
-            }
-            return this;
-        }
-
-        public IDbDataParameter AddParam((string name, object value) valueTuple)
-        {
-           return CreateParameter(valueTuple.name,valueTuple.value);
-        }
-        public IQueryBuilder Builder => this;
-        IQuery IQuery.Set(string text)
-        {
-            ClauseBuilder.CommandText = text;
-            return this;
-        }
-
+        public ICommandCommon<IQueryCommon> Common => this;
         Command IWrapCommand.Command => this;
-        
+        public CancellationToken Token => Transaction.Token;
 
         public Task<int> RunAsync()
         {
@@ -468,21 +180,21 @@ namespace DBInline.Classes
             return DbCommand.ExecuteNonQueryAsync(Token);
         }
         
-
         public DataSet DataSet()
         {
             ClauseBuilder.BuildClauses(this);
             var dt = new DataSet();
-             using var da= new DataAdapter(this);
+            using var da = new DataAdapter(this);
             da.Fill(dt);
             return dt;
         }
+
         public async Task<DataSet> DataSetAsync()
         {
             ClauseBuilder.BuildClauses(this);
             var dt = new DataSet();
-            await using var da= new DataAdapter(this);
-            await da.FillAsync(dt,Token).ConfigureAwait(false);
+            await using var da = new DataAdapter(this);
+            await da.FillAsync(dt, Token).ConfigureAwait(false);
             return dt;
         }
 
@@ -496,7 +208,7 @@ namespace DBInline.Classes
         {
             ClauseBuilder.BuildClauses(this);
             var dt = new DataTable();
-            using var da= new DataAdapter(this);
+            using var da = new DataAdapter(this);
             da.Fill(dt);
             return dt;
         }
@@ -505,15 +217,308 @@ namespace DBInline.Classes
         {
             ClauseBuilder.BuildClauses(this);
             var dt = new DataTable();
-            await using var da= new DataAdapter(this);
-            await da.FillAsync(dt,Token).ConfigureAwait(false);
+            await using var da = new DataAdapter(this);
+            await da.FillAsync(dt, Token).ConfigureAwait(false);
             return dt;
         }
-        
+
         public Task<DbDataReader> ReaderAsync()
         {
             ClauseBuilder.BuildClauses(this);
             return DbCommand.ExecuteReaderAsync(Token);
+        }
+        public override void Cancel()
+        {
+            DbCommand.Cancel();
+        }
+
+        public T Scalar<T>()
+        {
+            var res = (T) ExecuteScalar();
+            return res;
+        }
+
+        public async Task<T> ScalarAsync<T>()
+        {
+            var res = (T) await ExecuteScalarAsync(Token);
+            return res;
+        }
+
+        public object Scalar()
+        {
+            return ExecuteScalar();
+        }
+
+        public async Task<object> ScalarAsync()
+        {
+            var res = await ExecuteScalarAsync(Token);
+            return res;
+        }
+
+        public IEnumerable<TOut> Select<TOut>(Func<IDataReader, TOut> transform)
+        {
+            ClauseBuilder.BuildClauses(this);
+            using var r = ExecuteReader();
+            while (r.Read())
+            {
+                yield return transform(r);
+            }
+            r.Close();
+        }
+
+        public async Task<List<TOut>> SelectAsync<TOut>(Func<IDataReader, TOut> transform)
+        {
+            var res = new List<TOut>();
+            await using var r = await ExecuteReaderAsync(Token);
+            while (r.Read())
+            {
+                res.Add(transform(r));
+            }
+            r.Close();
+            return res;
+        }
+
+        public async IAsyncEnumerable<TOut> SelectAsyncEnumerable<TOut>(Func<IDataReader, TOut> transform)
+        {
+            ClauseBuilder.BuildClauses(this);
+            await using var r = await ExecuteReaderAsync(Token);
+            while (r.Read())
+            {
+                yield return transform(r);
+            }
+            await r.CloseAsync().ConfigureAwait(false);
+        }
+
+        private Parameter CreateParameter(string name, object value)
+        {
+            var param = Connection.DbType switch
+            {
+                Database.Mssql => new Parameter(this, new SqlParameter(name, value)),
+                Database.Postgres => new Parameter(this, new NpgsqlParameter(name, value)),
+                Database.Mysql => new Parameter(this, new MySqlParameter(name, value)),
+                Database.SqlLite => new Parameter(this, new SqliteParameter(name, value)),
+                _ => new Parameter(DbCommand.CreateParameter())
+            };
+            base.Parameters.Add(param.DbParameter);
+            return param;
+        }
+
+        public int Run()
+        {
+            var res = ExecuteNonQuery();
+            return res;
+        }
+
+        public object RunScalar()
+        {
+            var res = ExecuteScalar();
+            return res;
+        }
+
+        public override int ExecuteNonQuery()
+        {
+            ClauseBuilder.BuildClauses(this);
+            return DbCommand.ExecuteNonQuery();
+        }
+
+        public override object ExecuteScalar()
+        {
+            ClauseBuilder.BuildClauses(this);
+            return DbCommand.ExecuteScalar();
+        }
+
+        public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
+        {
+            ClauseBuilder.BuildClauses(this);
+            return base.ExecuteScalarAsync(cancellationToken);
+        }
+
+        public override void Prepare()
+        {
+            DbCommand.Prepare();
+        }
+
+        public new void Dispose()
+        {
+            DbCommand.Dispose();
+            if (_isolated) Transaction.Dispose();
+        }
+        
+        protected override DbParameter CreateDbParameter()
+        {
+            return DbCommand.CreateParameter();
+        }
+
+        protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
+        {
+            ClauseBuilder.BuildClauses(this);
+            return DbCommand.ExecuteReader();
+        }
+
+        IQuery IQuery.Set(string text)
+        {
+            ClauseBuilder.CommandText = text;
+            return this;
+        }
+
+        IQuery ICommandCommon<IQuery>.Rollback(Action action)
+        {
+            Transaction.Rollback(action);
+            return this;
+        }
+
+        IQuery ICommandCommon<IQuery>.Param(string name, object value)
+        {
+            CreateParameter(name, value);
+            return this;
+        }
+
+        public IQuery Param(IDbDataParameter parameter)
+        {
+            CreateParameter(parameter.ParameterName, parameter.Value);
+            return this;
+        }
+
+        public IQuery Param(SimpleParameter parameter)
+        {
+            CreateParameter(parameter.Name, parameter.Value);
+            return this;
+        }
+
+        IQuery ICommandCommon<IQuery>.Parameters(IEnumerable<IDbDataParameter> paramArray)
+        {
+            foreach (var dbDataParameter in paramArray)
+            {
+                CreateParameter(dbDataParameter.ParameterName, dbDataParameter.Value);
+            }
+
+            return this;
+        }
+
+        public IQuery Order(string clause)
+        {
+            ClauseBuilder.AddOr(clause);
+            return this;
+        }
+
+        public IQuery Limit(int limit)
+        {
+            ClauseBuilder.Limit = limit;
+            return this;
+        }
+        
+        IQueryBuilder<IQuery> ICommand<IQuery>.Where(string clause)
+        {
+            return Where(clause);
+        }
+
+        IQueryBuilder<IQuery> ICommand<IQuery>.Where(string fieldName, object value)
+        {
+            WhereInternal(fieldName, value);
+            return this;
+        }
+
+        private string GenerateParam(string fieldName, object value)
+        {
+            Interlocked.Increment(ref _generatedParamId);
+            var name = $"@{fieldName}_{_generatedParamId}";
+            Param((name, value));
+            return name;
+        }
+        
+        protected void WhereInternal(string fieldName, object value)
+        {
+            var name = GenerateParam(fieldName, value);
+            Where($"{fieldName}={name}");
+        }
+        
+        private IQueryBuilder<Command> Where(string whereString)
+        {
+            ClauseBuilder.AddWhere(whereString);
+            return this;
+        }
+        
+        IQuery ICommandCommon<IQuery>.Limit(int limit)
+        {
+            ClauseBuilder.Limit = limit;
+            return this;
+        }
+
+        IQuery ICommandCommon<IQuery>.Order(string clause)
+        {
+            ClauseBuilder.OrderClause = clause;
+            return this;
+        }
+        
+        IQuery ICommandCommon<IQuery>.Param(IDbDataParameter parameter)
+        {
+            CreateParameter(parameter.ParameterName, parameter.Value);
+            return this;
+        }
+
+        IQuery ICommandCommon<IQuery>.Param(SimpleParameter parameter)
+        {
+            CreateParameter(parameter.Name, parameter.Value);
+            return this;
+        }
+
+        IAddParameter IAddParameter.Param(string name, object value)
+        {
+            CreateParameter(name, value);
+            return this;
+        }
+
+        IAddParameter IAddParameter.Parameters(IEnumerable<IDbDataParameter> paramArray)
+        {
+            return Parameters(paramArray);
+        }
+
+        IAddRollBack IAddRollBack.Rollback(Action action)
+        {
+            Transaction.Rollback(action);
+            return this;
+        }
+        
+        public IQuery Param(string name, object value)
+        {
+            CreateParameter(name, value);
+            return this;
+        }
+
+        public IQuery Parameters(IEnumerable<IDbDataParameter> paramArray)
+        {
+            foreach (var dbDataParameter in paramArray)
+            {
+                CreateParameter(dbDataParameter.ParameterName, dbDataParameter.Value);
+            }
+
+            return this;
+        }
+
+        // ReSharper disable once UnusedMethodReturnValue.Local
+        private IDbDataParameter Param((string name, object value) valueTuple)
+        {
+            var (name, value) = valueTuple;
+            return CreateParameter(name, value);
+        }
+        
+
+        IQueryBuilder<Command> IQueryBuilder<Command>.Or(string clause)
+        {
+            ClauseBuilder.AddOr(clause);
+            return this;
+        }
+
+        IQueryBuilder<Command> IQueryBuilder<Command>.Or(string fieldName, object value)
+        {
+            OrInternal(fieldName, value);
+            return this;
+        }
+
+        protected void OrInternal(string fieldName, object value)
+        {
+            var name = GenerateParam(fieldName, value);
+            ClauseBuilder.AddOr($"{fieldName}={name}");
         }
     }
 }

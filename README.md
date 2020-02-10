@@ -1,17 +1,20 @@
-# DBInline 1.0.0-alpha
+# DBInline 1.0.0-pre-release
 
 - WIP
 - Currently all Tests pass.
-- Alpha Release Version. Should not be used in Production.
+- Before using this in production, more testing should be done.
 
 # Summary
 
 - Collection of Classes/Interfaces/Extensions to quickly get transactions,
-  commands and also pool different Databases together.
+  commands and also pool different Databases together in the code.
+  
+- Contains various wrappers/static methods/overloads for different Database use-cases.
+  Wrappers for Insert/Select/Update/Delete and Subqueries are currently in the works and will follow soon.
   
 - Rollbacks/Disposing is handled in the background.
 
-- Commits, Rollbacks all transactions/connections of multiple databases are created and pooled together.
+- Commits, Rollbacks all transactions/connections of multiple databases are created and handled together.
 
 - Will rollback if an exception occurs or if you are using the Pool class and forget to call Commit().
 
@@ -25,24 +28,24 @@
 
 # DatabaseContext
 
-- The DBcontext is identified with a name and you can register a new context in the ContextController class.
+- The DbContext is identified with a name and you can register a new context in the ContextController class.
 
 - If no name is passed, a defaultContext is used.
 
-- Postgres and MsSql are tested, MySql isn't but should work as well if a connectionstring is defined in the DatabaseContext class.
+- Postgres and MsSql are tested, MySql isn't but should work as well if a ConnectionString is defined in the DatabaseContext class.
 
-- Sqllite might be removed in the future, since it does not support everything anyway.
+- SqlLite might be removed in the future, since it does not support everything anyway.
 
 # Async
 
 - Contains async versions for every method also async Lambda Pool versions,
-  in case it's necessary to query different Databases at the same time with everything beeing rollbacked if an exception occurs.
+  in case it's necessary to query different Databases at the same time, rollbacks for both and also rollbacks in the application.
 
 # Usage
 
 - It is not forbidden to nest pools, some tests passed, but it is not intended/supported and may yield unexpected results.
 
-- There is a lot of options on how to select objects (Datatset,Datatable,Reader etc...),
+- There is a lot of options on how to select objects (DataSet,DataTable,Reader etc...),
   which makes the api a little unintuitive in some places, since there is too many options at the moment.
 
 - Some of them might be removed for clearer Usage and improved generic type inference.
@@ -55,7 +58,7 @@
 - Don't forget to use using ```cs var p = new Pool()``` on this variant, or ur pool will not be rollbacked/disposed/handled properly.
 - If using lambdas is preferred, there are static functions that take a lambda as parameter.
 
-- These have to be statically imported.
+- These have to be imported.
   E.g.: 
  ```cs
  using static DBInline.Extensions;
@@ -68,10 +71,9 @@ var t = Transaction(t =>
 {
    return t.Query<string>()
        .Set('Some query')
-       .Param("name","John Doe")
-       .Where("name like @name")
-       .Where("DBID > 1000")
-       .Limit(5)
+       .Where("name","John Doe") //Parameters can be generated like this.
+       .Or("name","Peter Brown") // Or condition will always be added to the last where condition like so: WHERE (name=@generatedParam_1 OR name=@generatedParam2)
+       .Limit(5) // Setting Result count limit
        .AddRollback(() =>
        {
            Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
@@ -86,9 +88,11 @@ return await TransactionAsync(t =>
             {
                return t.Query<string>()
                     .Set('Some query')
-                    .Param("name","John Doe")
+                    .Param("name","John Doe") //Adding parameter with name and value.
+                    .Param(some IDbParameter Implementation) //Adding IDbParameter.
+                    .Param(("@name","Peter Brown") //Adding parameter as ValueTuple.
                     .Where("name like @name")
-                    .Limit(5)
+                    .Limit(5) // Setting Result count limit
                     .Select(r => (string) r[0]) //Create the objects
                     .ToList(); //Connection will close if iterator is returned immediately, call ToList() or create another collection.
             });
@@ -117,8 +121,7 @@ return await QueryAsync<List<string>>('Some query', cmd =>
 using var p = Pool(); 
 var i = p.Query()
     .Set('Some update/delete query')
-    .Param("DBID",10)
-    .Where("DBID = @DBID")
+    .Where("DBID", 10)
     .AddRollback(() =>
     {
        Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
@@ -134,9 +137,8 @@ var res1 = !p.Query()
 for (var counter = 1; counter< 10; counter++)
 {
     p.Query()
-        .Set('Update/delete query')
-        .Param("DBID", counter)
-        .Where("DBID = @DBID")
+        .Set('Update/delete query'
+        .Where("DBID", counter)
         .AddRollback(() =>
         {
             Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
@@ -147,7 +149,7 @@ for (var counter = 1; counter< 10; counter++)
 var res2 = p.Query<long>(Database2) //Query another Database
     .Set('Some query')
     .Param("param", "value") //Add parameter with name and value
-    .Where("name = @param")
+    .Where("DBID > @param")
     .Scalar(); //ExecuteScalar
 
 p.Commit();  //With the using statement in place, if this is not called everything will be rollbacked.
@@ -158,10 +160,10 @@ return Pool(p =>
     {
         var res1 = p.Query<DataTable>()
             .Set('Some select query')
-            .Param("DBID", 10)
-            .Where("DBID = @DBID")
+            .Where("DBID", 10)
+            .Or("DBID",11)
             .Table(); //Select as Datatable
-        return res1;
+        return res1.ToJson() //Extension to immediately create Json out of a Datatable;
     });
 }          
 ```
@@ -169,42 +171,45 @@ return Pool(p =>
 ```cs
 var t =PoolAsync(p => ...            
 ```        
-- Or if you want to use an async lambda instead of adding tasks to a list (Querying multiple different Databases at once):         
+- async lambdas are only handled in the Pool-Extensions:         
 ```cs 
 return await PoolAsync(async p =>
-            {
-                var asyncIe =  p.Query<string>()
-                    .Set(ExampleQuery3)
-                    .limit(10)
-                    .SelectAsync(r=> (string)r[0]);
-
-                var res1 = p.Query<string>()
-                    .Set(ExampleQuery1)
-                    .Param("name","John Doe")
-                    .Where("name like @name")
-                    .AddRollback(() =>
-                    {
-                        Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
-                    })
-                    .ScalarAsync();
-
-                var res2 =await  p.Query<long>(Database2)
-                    .Set(ExampleQuery2)
-                    .Param("name","John Doe")
-                    .Where("name like @name")
-                    .ScalarAsync();
-
-                var json = "";
-                await foreach(var obj in asyncIe)
-                {
-                    json += obj;
-                }
-                return json.Any() + await res1 + (res2 > 0);
-            }).ConfigureAwait(false);
+                   {
+                       var list = new List<string>();
+       
+                       await foreach (var x in p.Query()
+                           .Set(SelectQuery)
+                           .SelectAsyncEnumerable(x => (string) x[1])) //Selecting IAsyncIEnumerable<T>
+                       {
+                           list.Add(x);
+                       }
+       
+                       var johnJames = (await p.Query()
+                           .Set(SelectQuery)
+                           .Where("name", "John Doe")
+                           .Or("name", "James Smith")
+                           .SelectAsync(x => (string) x[1]) //Selecting Task<List<T>>
+                           .ConfigureAwait(false));
+       
+                       var peter = await p.Query<int>()
+                           .Set(SelectQuery)
+                           .ScalarAsync()
+                           .ConfigureAwait(false);
+       
+                   }).ConfigureAwait(false);
 ```
 
 # Tests
 
-- On seperate Branch cause they are a mess.
-- DB Instance dependent and chaotic, see:[Improve Test Project](https://github.com/NicoZweifel/DBInline/issues/1)
-- Eventually there will be Tables generated and used in the tests.
+- Contains TestProject that will create a Test-Table named dbinline_generated_table
+- Put Credentials @ DBInline.Test/bin/debug||release/netcoreapp3.1/credentials
+```cs            
+if (ContextController.Connected) return;
+var path = Path.Combine(Environment.CurrentDirectory, "credentials\\data.json");
+if (!File.Exists(path))
+{
+    File.WriteAllText(path,JsonSerializer.Serialize(new List<DatabaseCredentials> {new DatabaseCredentials()}));
+    throw new Exception($"No Database Credentials found, file has been created at {path}");
+}
+var credentials = JsonSerializer.Deserialize<DatabaseCredentials[]>(File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "credentials\\data.json")));
+```
