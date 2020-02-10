@@ -9,7 +9,7 @@ namespace DBInline.Test
     public class DropCreateTest : TestBase
     {
         // Using Multiple Pools to check if everything is persistent.
-        [Test, NonParallelizable,Order(0)]
+        [Test, NonParallelizable, Order(0)]
         public void DropCreate()
         {
             using var p = Pool();
@@ -22,7 +22,7 @@ namespace DBInline.Test
                 .Set(CreateQuery)
                 .Run();
 
-            p.Commit(); //Test if it saved
+            p.Commit(); //Test
             
             var selCount = p.Query()
                 .Set(SelectQuery)
@@ -38,19 +38,18 @@ namespace DBInline.Test
 
             Assert.IsTrue(insCount == 5, "Table should be filled.");
 
-            p.Commit();
-            
-             selCount = p.Query()
+            selCount = p.Query()
                 .Set(SelectQuery)
                 .Select(x => x)
                 .ToList()
                 .Count;
-             
-             Assert.IsTrue(selCount == 5, "Table should be filled.");
-             p.Commit();
-             Assert.Pass();
+
+            p.Commit();
+
+            Assert.IsTrue(selCount == 5, "Table should be filled.");
+            Assert.Pass();
         }
-        
+
         [Test, NonParallelizable,Order(1)]
         public async Task DropCreateAsync()
         {
@@ -65,7 +64,7 @@ namespace DBInline.Test
                    .Set(CreateQuery)
                    .Run();
 
-               p.Commit(); //Test if it saved
+               p.Commit(); //Test
                
                var selCount = p.Query()
                    .Set(SelectQuery)
@@ -81,7 +80,7 @@ namespace DBInline.Test
 
                Assert.IsTrue(insCount == 5, "Table should be filled.");
 
-               p.Commit();
+               p.Commit(); //Test
 
                selCount = p.Query()
                    .Set(SelectQuery)
