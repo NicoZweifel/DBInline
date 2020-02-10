@@ -1,14 +1,14 @@
 namespace DBInline.Interfaces
 {
-    public interface IConditionBuilder<out TBuilder> : IQuery where TBuilder : IQueryCommon
+    public interface IConditionBuilder : IQuery,ICommandBuilder
     {
-        public IConditionBuilder<TBuilder> Or(string clause);
-        public IConditionBuilder<TBuilder> Or(string fieldName, object value);
+        public IConditionBuilder Or(string clause);
+        public IConditionBuilder Or(string fieldName, object value);
     }
 
-    public interface IConditionBuilder<out TBuilder, TOut> : IQuery<TOut> where TBuilder : IQueryCommon
+    public interface IConditionBuilder<T> : IQuery<T> ,ICommandBuilder<T>
     {
-        public IConditionBuilder<TBuilder, TOut> Or(string clause);
-        public IConditionBuilder<TBuilder, TOut> Or(string fieldName, object value);
+        public IConditionBuilder<T> Or(string clause);
+        public IConditionBuilder<T> Or(string fieldName, object value);
     }
 }

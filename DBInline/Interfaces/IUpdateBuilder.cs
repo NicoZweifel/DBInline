@@ -1,12 +1,20 @@
 namespace DBInline.Interfaces
 {
-    public interface IUpdateBuilder<out TBuilder,TOut> : IQuery<TOut> where TBuilder : IQueryCommon
+   
+    public interface IUpdateBuilder 
     {
-        public IUpdateBuilder<TBuilder,TOut> Set<T>(string columnName,T value);
+        public IUpdateBuilder Set<TParam>(string columnName, TParam value);
     }
-
-    public interface IUpdateBuilder<out TBuilder> : IQuery where TBuilder : IQueryCommon
+    public interface IUpdateBuilder<T> 
     {
-        public IUpdateBuilder<TBuilder> Set<T>(string columnName, T value);
+        public IUpdateBuilder<T> Set<TParam>(string columnName,TParam value);
+    }
+    public interface IUpdateQuery : IUpdateBuilder, IQuery
+    {
+    
+    }
+    public interface IUpdateQuery<T> : IUpdateBuilder<T>, IQuery<T>
+    {
+    
     }
 }

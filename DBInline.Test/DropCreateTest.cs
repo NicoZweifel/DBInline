@@ -15,17 +15,17 @@ namespace DBInline.Test
             using var p = Pool();
 
             p.Query()
-                .Set(DropQuery)
+                .Text(DropQuery)
                 .Run();
 
             p.Query()
-                .Set(CreateQuery)
+                .Text(CreateQuery)
                 .Run();
 
             p.Commit(); //Test
             
             var selCount = p.Query()
-                .Set(SelectQuery)
+                .Text(SelectQuery)
                 .Get(x => x)
                 .ToList()
                 .Count;
@@ -33,13 +33,13 @@ namespace DBInline.Test
             Assert.IsTrue(selCount == 0, "Table should be empty.");
 
             var insCount = p.Query()
-                .Set(InsertQuery)
+                .Text(InsertQuery)
                 .Run();
 
             Assert.IsTrue(insCount == 5, "Table should be filled.");
 
             selCount = p.Query()
-                .Set(SelectQuery)
+                .Text(SelectQuery)
                 .Get(x => x)
                 .ToList()
                 .Count;
@@ -57,17 +57,17 @@ namespace DBInline.Test
            {
                
                p.Query()
-                   .Set(DropQuery)
+                   .Text(DropQuery)
                    .Run();
 
                p.Query()
-                   .Set(CreateQuery)
+                   .Text(CreateQuery)
                    .Run();
 
                p.Commit(); //Test
                
                var selCount = p.Query()
-                   .Set(SelectQuery)
+                   .Text(SelectQuery)
                    .Get(x => x)
                    .ToList()
                    .Count;
@@ -75,7 +75,7 @@ namespace DBInline.Test
                Assert.IsTrue(selCount == 0, "Table should be empty.");
 
                var insCount = p.Query()
-                   .Set(InsertQuery)
+                   .Text(InsertQuery)
                    .Run();
 
                Assert.IsTrue(insCount == 5, "Table should be filled.");
@@ -83,7 +83,7 @@ namespace DBInline.Test
                p.Commit(); //Test
 
                selCount = p.Query()
-                   .Set(SelectQuery)
+                   .Text(SelectQuery)
                    .Get(x => x)
                    .ToList()
                    .Count;

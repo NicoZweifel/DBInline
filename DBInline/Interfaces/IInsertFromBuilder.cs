@@ -1,8 +1,13 @@
 namespace DBInline.Interfaces
 {
-    public interface IInsertFromBuilder<out TBuilder> where TBuilder : IQueryCommon
+    public interface IInsertFromBuilder
     {
-        public ITableBuilder<TBuilder> Select(string[] fields);
+        public ITableBuilder Select(string[] fields);
+        
+    }
+    public interface IInsertFromBuilder<T>
+    {
+        public ITableBuilder<T> Select(string[] fields);
         
     }
 }

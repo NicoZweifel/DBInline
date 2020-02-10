@@ -1,7 +1,12 @@
 namespace DBInline.Interfaces
 {
-    public interface IInsertBuilder<out TBuilder> : IQuery where TBuilder : IQueryCommon
+    public interface IInsertBuilder 
     {
-        public IValueCollectionBuilder<TBuilder> Into(string[] columns);
+        public IValueCollectionBuilder Into(string[] columns);
+    }
+    
+    public interface IInsertBuilder<T> 
+    {
+        public IValueCollectionBuilder<T> Into(string[] columns);
     }
 }

@@ -124,7 +124,8 @@ namespace DBInline.Classes
 
         public IAddParameter Param(string name, object value)
         {
-            return _command.Param(name, value);
+             _command.Param(name, value);
+             return this;
         }
 
         public IAddParameter Parameters(IEnumerable<IDbDataParameter> paramArray)

@@ -12,7 +12,7 @@ namespace DBInline.Test
         {
             using var p = Pool();
             p.Query()
-                .Set(DropQuery)
+                .Text(DropQuery)
                 .Run();
             p.Commit();
             Assert.Pass();

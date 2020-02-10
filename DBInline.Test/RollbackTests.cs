@@ -20,11 +20,11 @@ namespace DBInline.Test
                 using var p = Pool();
                 
                 p.Query()
-                    .Set(DeleteQuery)
+                    .Text(DeleteQuery)
                     .Run();
 
                 var l = p.Query()
-                    .Set(SelectQuery)
+                    .Text(SelectQuery)
                     .Get(x => x)
                     .ToList();
 
@@ -43,7 +43,7 @@ namespace DBInline.Test
                 var l = Transaction(t =>
                 {
                     return t.Query()
-                        .Set(SelectQuery)
+                        .Text(SelectQuery)
                         .Get(x => (int) x[0])
                         .ToList();
                 });
@@ -62,12 +62,12 @@ namespace DBInline.Test
                 Pool(async p =>
                 {
                     await p.Query()
-                        .Set(DeleteQuery)
+                        .Text(DeleteQuery)
                         .RunAsync()
                         .ConfigureAwait(false);
 
                     var l = p.Query()
-                        .Set(SelectQuery)
+                        .Text(SelectQuery)
                         .Get(x => x)
                         .ToList();
 
@@ -87,7 +87,7 @@ namespace DBInline.Test
                 var l = Transaction(t =>
                 {
                     return t.Query()
-                        .Set(SelectQuery)
+                        .Text(SelectQuery)
                         .Get(x => (int) x[0])
                         .ToList();
                 });
@@ -104,11 +104,11 @@ namespace DBInline.Test
                 await PoolAsync(p =>
                 {
                     p.Query()
-                        .Set(DeleteQuery)
+                        .Text(DeleteQuery)
                         .Run();
 
                     var selCount = p.Query()
-                        .Set(SelectQuery)
+                        .Text(SelectQuery)
                         .Get(x => x)
                         .ToList()
                         .Count;
@@ -126,7 +126,7 @@ namespace DBInline.Test
                 var l = Transaction(t =>
                 {
                     return t.Query()
-                        .Set(SelectQuery)
+                        .Text(SelectQuery)
                         .Get(x => (int) x[0])
                         .ToList();
                 });
@@ -144,12 +144,12 @@ namespace DBInline.Test
                 await PoolAsync(async p =>
                 {
                     await p.Query()
-                        .Set(DeleteQuery)
+                        .Text(DeleteQuery)
                         .RunAsync()
                         .ConfigureAwait(false);
 
                     var count = (await p.Query()
-                            .Set(SelectQuery)
+                            .Text(SelectQuery)
                             .GetAsync(x => x)
                             .ConfigureAwait(false))
                         .Count;
@@ -167,7 +167,7 @@ namespace DBInline.Test
                 var l = await TransactionAsync(t =>
                 {
                     return t.Query()
-                        .Set(SelectQuery)
+                        .Text(SelectQuery)
                         .Get(x => (int) x[0])
                         .ToList();
                 }).ConfigureAwait(false);
@@ -185,7 +185,7 @@ namespace DBInline.Test
                 Transaction(t =>
                 {
                     t.Query()
-                        .Set(DeleteQuery)
+                        .Text(DeleteQuery)
                         .Run();
                     
                     throw new TestException();
@@ -199,7 +199,7 @@ namespace DBInline.Test
                 var l = Transaction(t =>
                 {
                     return t.Query()
-                        .Set(SelectQuery)
+                        .Text(SelectQuery)
                         .Get(x => (int) x[0])
                         .ToList();
                 });
@@ -217,7 +217,7 @@ namespace DBInline.Test
                 await TransactionAsync(t =>
                 {
                     t.Query()
-                        .Set(DeleteQuery)
+                        .Text(DeleteQuery)
                         .Run();
                     
                     throw new TestException();
@@ -231,7 +231,7 @@ namespace DBInline.Test
                 var l = await TransactionAsync(t =>
                 {
                     return t.Query()
-                        .Set(SelectQuery)
+                        .Text(SelectQuery)
                         .Get(x => (int) x[0])
                         .ToList();
                 }).ConfigureAwait(false);
