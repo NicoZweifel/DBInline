@@ -186,20 +186,13 @@ namespace DBInline
                 }
                 return res;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 if (handleTransaction)
                 {
                     tran.Rollback();
                 }
-                if (ex !is Pool.PoolCanceledException)
-                {
-                    throw new AggregateException("Failed to run Transaction.", ex);
-                }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
             finally
             {

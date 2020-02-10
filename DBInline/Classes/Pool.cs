@@ -126,15 +126,14 @@ namespace DBInline.Classes
                         exceptions.Add(ex);
                     }
                 }
-
-                if (exceptions.Any())
-                {
-                    throw new AggregateException("A Rollback Action in the pool has failed!", exceptions);
-                }
             }
             catch (Exception ex)
             {
                 exceptions.Add(ex);
+            }
+            if (exceptions.Any())
+            {
+                throw new AggregateException("A Rollback Action in the pool has failed!", exceptions);
             }
         }
 
