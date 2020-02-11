@@ -34,7 +34,7 @@ namespace DBInline.Test
         }
 
 
-        protected const string tableName = "\"dbinline_generated_table\"";
+        protected const string TableName = "dbinline_generated_table";
         
         /// <summary>
         /// Creates Table for tests.

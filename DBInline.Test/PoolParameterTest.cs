@@ -19,25 +19,25 @@ namespace DBInline.Test
                 .Select()
                 .Add("id")
                 .Add("name")
-                .From(tableName)
+                .From(TableName)
                 .Where("id",2)
                 .Scalar();
 //doesnt work yet
             var test2 = p.Query<int>()
-                .Update(tableName)
+                .Update(TableName)
                 .Set("name", "John Doe2")
                 .Set("id",6)
                 .Where("id", 1)
                 .Select()
                 .Add("name")
-                .From(tableName)
+                .From(TableName)
                 .Where("id",6)
                 .Scalar();
             
 //the rest works
             var list = p.Query()
                 .Select("*")
-                .From(tableName)
+                .From(TableName)
                 .Get(x => (string) x[1])
                 .ToList();
 
@@ -45,7 +45,7 @@ namespace DBInline.Test
 
             var johnJames = p.Query()
                 .Select("*")
-                .From(tableName)
+                .From(TableName)
                 .Where("name", "John Doe")
                 .Or("name", "James Smith")
                 .Get(x => (string) x[1])
@@ -57,7 +57,7 @@ namespace DBInline.Test
 
             var peter = p.Query<int>()
                 .Select("*")
-                .From(tableName)
+                .From(TableName)
                 .Where("name", "Peter Brown")
                 .Scalar();
 
@@ -76,7 +76,7 @@ namespace DBInline.Test
 
                 await foreach (var x in p.Query()
                     .Select("*")
-                    .From(tableName)
+                    .From(TableName)
                     .GetAsyncEnumerable(x => (string) x[1])
                     .ConfigureAwait(false))
                 {
@@ -88,7 +88,7 @@ namespace DBInline.Test
 
                 var johnJames = (await p.Query()
                     .Select("*")
-                    .From(tableName)
+                    .From(TableName)
                     .Where("name", "John Doe")
                     .Or("name", "James Smith")
                     .GetAsync(x => (string) x[1])
@@ -100,7 +100,7 @@ namespace DBInline.Test
 
                 var peter = await p.Query<int>()
                     .Select("id")
-                    .From(tableName)
+                    .From(TableName)
                     .Where("name","Peter Brown")
                     .ScalarAsync()
                     .ConfigureAwait(false);

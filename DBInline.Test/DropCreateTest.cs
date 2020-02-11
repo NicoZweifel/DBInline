@@ -17,12 +17,12 @@ namespace DBInline.Test
             using var p = Pool();
 
             p.Query()
-                .Drop(tableName)
+                .Drop(TableName)
                 .IfExists()
                 .Run();
 
             p.Query()
-                .Create(tableName)
+                .Create(TableName)
                 .Add("dbid", SqlDbType.Int)
                 .Add("name", SqlDbType.VarChar, 50)
                 .Run();
@@ -31,7 +31,7 @@ namespace DBInline.Test
 
             var selCount = p.Query()
                 .Select("*")
-                .From(tableName)
+                .From(TableName)
                 .Get(x => (int) x[0])
                 .ToList()
                 .Count;
@@ -39,7 +39,7 @@ namespace DBInline.Test
             Assert.IsTrue(selCount == 0, "Table should be empty.");
 
             var insCount = p.Query()
-                .Insert(tableName)
+                .Insert(TableName)
                 .Add("id")
                 .Add("name")
                 .Values()
@@ -54,7 +54,7 @@ namespace DBInline.Test
 
             selCount = p.Query()
                 .Select("*")
-                .From(tableName)
+                .From(TableName)
                 .Get(x => x)
                 .ToList()
                 .Count;
@@ -72,12 +72,12 @@ namespace DBInline.Test
             {
 
                 p.Query()
-                    .Drop(tableName)
+                    .Drop(TableName)
                     .IfExists()
                     .Run();
 
                 p.Query()
-                    .Create(tableName)
+                    .Create(TableName)
                     .Add("dbid", SqlDbType.Int)
                     .Add("name", SqlDbType.VarChar, 50)
                     .Run();
@@ -86,7 +86,7 @@ namespace DBInline.Test
 
                 var selCount = p.Query()
                     .Select("*")
-                    .From(tableName)
+                    .From(TableName)
                     .Get(x => (int) x[0])
                     .ToList()
                     .Count;
@@ -94,7 +94,7 @@ namespace DBInline.Test
                 Assert.IsTrue(selCount == 0, "Table should be empty.");
 
                 var insCount = p.Query()
-                    .Insert(tableName)
+                    .Insert(TableName)
                     .Add("id")
                     .Add("name")
                     .Values()
@@ -111,7 +111,7 @@ namespace DBInline.Test
 
                 selCount = p.Query()
                     .Select("*")
-                    .From(tableName)
+                    .From(TableName)
                     .Get(x => x)
                     .ToList()
                     .Count;

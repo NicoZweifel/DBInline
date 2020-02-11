@@ -12,7 +12,7 @@ namespace DBInline.Test
         {
             using var p = Pool();
             p.Query()
-                .Drop(tableName)
+                .Drop(TableName)
                 .IfExists()
                 .Run();
             p.Commit();

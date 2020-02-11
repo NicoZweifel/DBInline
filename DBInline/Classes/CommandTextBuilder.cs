@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
 
@@ -13,24 +14,29 @@ namespace DBInline.Classes
         Insert = 2,
         Update = 3,
         Delete = 4,
-        Drop = 5
+        Drop = 5,
+        Create =6,
+        InsertFrom =7
     }
 
 
-    internal class CommandBuilder
+    internal class CommandTextBuilder
     {
         private readonly List<string> _whereClauses = new List<string>();
-        public string CommandText { get; set; }
+        
+        private string _commandText = "";
 
         private string _currentTable;
+
+        private string _fromTable;
         
         private QueryType _currentCommand;
 
-        private readonly List<string> _currentColumns = new List<string>();
+        private readonly List<string> _columns = new List<string>();
 
-        private readonly List<string> _currentValues = new List<string>();
+        private readonly List<string> _values = new List<string>();
 
-        public List<string> CurrentFields = new List<string>();
+        private bool _addIfExists;
 
         public string OrderClause
         {
@@ -44,11 +50,7 @@ namespace DBInline.Classes
 
         private string _orderClause = "";
         private int _limit;
-
-        public CommandBuilder(string currentTable)
-        {
-            this._currentTable = currentTable;
-        }
+        
 
         public void AddWhere(string whereClause)
         {
@@ -64,7 +66,7 @@ namespace DBInline.Classes
         {
             BuildCommandText();
             BuildClauses();
-            command.CommandText = CommandText;
+            command.CommandText += _commandText;
         }
 
         private void BuildClauses()
@@ -72,7 +74,7 @@ namespace DBInline.Classes
             var whereStr = _whereClauses.Any() ? $" WHERE ({string.Join(" AND ", _whereClauses)})" : "";
             var orderStr = _orderClause.Length != 0 ? $"ORDER BY {_orderClause}" : "";
             var limitStr = _limit > 0 ? $" LIMIT {_limit}" : "";
-            CommandText = $"{CommandText} {whereStr} {orderStr} {limitStr};";
+            _commandText = $"{_commandText} {whereStr} {orderStr} {limitStr};";
             _whereClauses.Clear();
             _orderClause = "";
             _limit = 0;
@@ -80,18 +82,18 @@ namespace DBInline.Classes
         
         public void AddColumns(IEnumerable<string> columnNames)
         {
-            _currentColumns.AddRange(columnNames ?? new string[] { });
+            _columns.AddRange(columnNames ?? new string[] { });
         }
 
         private void CheckCurrentCommand(string tableName)
         {
+            _currentTable = tableName;
             if (_currentCommand == 0) return;
             BuildCommandText();
             BuildClauses();
-            CommandText += $";{Environment.NewLine}";
         }
 
-        public void StartSelect()
+        public void AddSelect()
         {
             CheckCurrentCommand("");
             _currentCommand = QueryType.Select;
@@ -99,7 +101,7 @@ namespace DBInline.Classes
 
         public void AddValues(IEnumerable<string> values)
         {
-            _currentValues.AddRange(values ?? new string[] { });
+            _values.AddRange(values ?? new string[] { });
         }
 
         public void AddTableName(string tableName)
@@ -130,7 +132,51 @@ namespace DBInline.Classes
             _currentCommand = QueryType.Drop;
         }
 
+        public void AddDelete(string tableName)
+        {
+            CheckCurrentCommand(tableName);
+            _currentCommand = QueryType.Delete;
+        }
+        
+        public void AddCreate(string tableName)
+        {
+            CheckCurrentCommand(tableName);
+            _currentCommand = QueryType.Create;
+        }
+        
+        public void AddToRow<TIn>(TIn value)
+        {
+            if (_values[^1].Any()) _values[^1] += ",";
+            _values[^1] += $"{value}";
+        }
 
+        public void AddRow()
+        {
+            _values.Add("");
+        }
+
+        public void AddColumnDefinition(string column, SqlDbType type, in int charCount)
+        {
+            var def = charCount > 0 ? $"{charCount}" : "";
+            _values.Add($"{column}{type}({def})");
+        }
+        
+        public void AddInsertFromColumns(IEnumerable<string> columns)
+        {
+            _currentCommand = QueryType.InsertFrom;
+            _values.AddRange(columns);
+        }
+
+        public void AddUpdateValue(string columnName, string name)
+        {
+            _values.Add($"{columnName}={name}");
+        }
+        
+        public void AddIfExists()
+        {
+            _addIfExists = true;
+        }
+        
         private void BuildCommandText()
         {
             switch (_currentCommand)
@@ -138,22 +184,36 @@ namespace DBInline.Classes
                 case QueryType.None:
                     break;
                 case QueryType.Select:
-                    CommandText = $"SELECT {string.Join(",", _currentColumns)} FROM {_currentTable} ";
+                    _commandText += $" SELECT {string.Join(",", _columns)} FROM \"{_currentTable}\" ";
                     break;
                 case QueryType.Insert:
-                    CommandText = $"INSERT INTO {_currentTable} {string.Join(",",_currentColumns)} VALUES {string.Join(",",_currentValues)}";
+                    _commandText +=
+                        $" INSERT INTO \"{_currentTable}\" ({string.Join(",", _columns)}) VALUES {string.Join(",", _values.Select(x=>$"({x})"))} ";
                     break;
                 case QueryType.Update:
-                    CommandText = $"UPDATE {_currentTable} ";
+                    _commandText += $" UPDATE \"{_currentTable}\" SET {string.Join(",",_values)} ";
                     break;
                 case QueryType.Delete:
+                    _commandText += $" DELETE FROM \"{_currentTable}\" ";
                     break;
                 case QueryType.Drop:
-                    CommandText = $"DROP TABLE {_currentTable} ";
+                    var ifExists = _addIfExists ? " IF EXISTS " : "";
+                    _commandText += $" DROP TABLE {ifExists} \"{_currentTable}\" ";
+                    break;
+                case QueryType.Create:
+                    _commandText += $" CREATE TABLE \"{_currentTable}\" ({string.Join(",", _values)}) ";
+                    break;
+                case QueryType.InsertFrom:
+                    _commandText += $" INSERT INTO \"{_currentTable}\" ({string.Join(",", _columns)}) VALUES (SELECT  {string.Join(",", _values)} FROM \"{_fromTable}\") ";
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+            _currentTable = "";
+            _columns.Clear();
+            _values.Clear();
+            _fromTable = "";
+            _addIfExists = false;
         }
     }
 }
