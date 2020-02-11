@@ -76,7 +76,7 @@ namespace DBInline.Classes
 
         IConditionBuilder<T> ICommandBuilder<T>.Where(string fieldName, object value)
         {
-            WhereInternal(fieldName, value);
+            WhereInternal(fieldName, "=",value);
             return this;
         }
 
@@ -306,7 +306,7 @@ namespace DBInline.Classes
 
         public Task<int> RunAsync()
         {
-            CommandBuilder.BuildClauses(this);
+            CommandBuilder.SetCommandText(this);
             return DbCommand.ExecuteNonQueryAsync(Token);
         }
 
@@ -317,7 +317,7 @@ namespace DBInline.Classes
 
         public DataSet DataSet()
         {
-            CommandBuilder.BuildClauses(this);
+            CommandBuilder.SetCommandText(this);
             var dt = new DataSet();
             using var da = new DataAdapter(this);
             da.Fill(dt);
@@ -326,7 +326,7 @@ namespace DBInline.Classes
 
         public async Task<DataSet> DataSetAsync()
         {
-            CommandBuilder.BuildClauses(this);
+            CommandBuilder.SetCommandText(this);
             var dt = new DataSet();
             await using var da = new DataAdapter(this);
             await da.FillAsync(dt, Token).ConfigureAwait(false);
@@ -335,13 +335,13 @@ namespace DBInline.Classes
 
         public DbDataReader Reader()
         {
-            CommandBuilder.BuildClauses(this);
+            CommandBuilder.SetCommandText(this);
             return ExecuteReader();
         }
 
         public DataTable Table()
         {
-            CommandBuilder.BuildClauses(this);
+            CommandBuilder.SetCommandText(this);
             var dt = new DataTable();
             using var da = new DataAdapter(this);
             da.Fill(dt);
@@ -350,7 +350,7 @@ namespace DBInline.Classes
 
         async Task<DataTable> IQuery.TableAsync()
         {
-            CommandBuilder.BuildClauses(this);
+            CommandBuilder.SetCommandText(this);
             var dt = new DataTable();
             await using var da = new DataAdapter(this);
             await da.FillAsync(dt, Token).ConfigureAwait(false);
@@ -359,7 +359,7 @@ namespace DBInline.Classes
 
         Task<DbDataReader> IQuery.ReaderAsync()
         {
-            CommandBuilder.BuildClauses(this);
+            CommandBuilder.SetCommandText(this);
             return DbCommand.ExecuteReaderAsync(Token);
         }
         public override void Cancel()
@@ -392,7 +392,7 @@ namespace DBInline.Classes
 
         IEnumerable<TOut> IQuery.Get<TOut>(Func<IDataReader, TOut> transform)
         {
-            CommandBuilder.BuildClauses(this);
+            CommandBuilder.SetCommandText(this);
             using var r = ExecuteReader();
             while (r.Read())
             {
@@ -415,7 +415,7 @@ namespace DBInline.Classes
 
         async IAsyncEnumerable<TOut> IQuery.GetAsyncEnumerable<TOut>(Func<IDataReader, TOut> transform)
         {
-            CommandBuilder.BuildClauses(this);
+            CommandBuilder.SetCommandText(this);
             await using var r = await ExecuteReaderAsync(Token);
             while (r.Read())
             {
@@ -446,27 +446,37 @@ namespace DBInline.Classes
 
         ICommandBuilder IInsertFromQuery.From(string tableName)
         {
-            throw new NotImplementedException();
+            CommandBuilder.AddTableName(tableName);
+            return this;
         }
         
         ISelectBuilder ISelectBuilder.Add(params string[] columnNames)
         {
-            throw new NotImplementedException();
+            CommandBuilder.AddColumns(columnNames);
+            return this;
+        }
+
+        public ISelectBuilder Select()
+        {
+            CommandBuilder.StartSelect();
+            return this;
         }
 
         IQuery ISelectBuilder.From(string tableName)
         {
-            throw new NotImplementedException();
+           CommandBuilder.AddFrom(tableName);
+           return this;
         }
         
         IInsertBuilder IInsertBuilder.Add(params string[] columnNames)
         {
-            throw new NotImplementedException();
+            CommandBuilder.AddColumns(columnNames);
+            return this;
         }
 
         IValuesBuilder IInsertBuilder.Values()
         {
-            throw new NotImplementedException();
+            return this;
         }
 
         private object RunScalar()
@@ -477,19 +487,19 @@ namespace DBInline.Classes
 
         public override int ExecuteNonQuery()
         {
-            CommandBuilder.BuildClauses(this);
+            CommandBuilder.SetCommandText(this);
             return DbCommand.ExecuteNonQuery();
         }
 
         public override object ExecuteScalar()
         {
-            CommandBuilder.BuildClauses(this);
+            CommandBuilder.SetCommandText(this);
             return DbCommand.ExecuteScalar();
         }
 
         public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
         {
-            CommandBuilder.BuildClauses(this);
+            CommandBuilder.SetCommandText(this);
             return base.ExecuteScalarAsync(cancellationToken);
         }
 
@@ -511,7 +521,7 @@ namespace DBInline.Classes
 
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
         {
-            CommandBuilder.BuildClauses(this);
+            CommandBuilder.SetCommandText(this);
             return DbCommand.ExecuteReader();
         }
         
@@ -546,13 +556,14 @@ namespace DBInline.Classes
 
         IConditionBuilder ICommandBuilder.Where(string fieldName, object value)
         {
-            WhereInternal(fieldName, value);
+            WhereInternal(fieldName, "=",value);
             return this;
         }
 
         IConditionBuilder ICommandBuilder.WhereNot(string fieldName, object value)
         {
-            throw new NotImplementedException();
+            WhereInternal(fieldName, "!=",value);
+            return this;
         }
 
         private string GenerateParam(string fieldName, object value)
@@ -563,10 +574,10 @@ namespace DBInline.Classes
             return name;
         }
         
-        protected void WhereInternal(string fieldName, object value)
+        protected void WhereInternal(string fieldName, string op,object value )
         {
             var name = GenerateParam(fieldName, value);
-            Where($"{fieldName}={name}");
+            Where($"{fieldName}{op}{name}");
         }
         
         private IConditionBuilder Where(string whereString)
@@ -627,57 +638,64 @@ namespace DBInline.Classes
 
         IQuery IInsertBuilder.From(string tableName)
         {
-            throw new NotImplementedException();
+            CommandBuilder.AddFrom(tableName);
+            return this;
         }
 
         IColumnsBuilder IColumnsBuilder.Add(params string[] columnName)
         {
-            throw new NotImplementedException();
+            CommandBuilder.AddColumns(columnName);
+            return this;
         }
-
-        ISelectBuilder IColumnsBuilder.Select()
-        {
-            throw new NotImplementedException();
-        }
-
+        
         ISelectBuilder IColumnsBuilder.Select(params string[] columns)
         {
-            throw new NotImplementedException();
+            CommandBuilder.StartSelect();
+            CommandBuilder.AddColumns(columns);
+            return this;
         }
 
-        IValuesBuilder IColumnsBuilder.Values()
+        public IValuesBuilder Values()
         {
             throw new NotImplementedException();
         }
 
         IInsertQuery IColumnsBuilder.Values(params string[] values)
         {
-            throw new NotImplementedException();
+            CommandBuilder.StartSelect();
+            CommandBuilder.AddValues(values);
+            return this;
         }
 
         ISelectBuilder ICommand.Select(params string[] columns)
         {
-            throw new NotImplementedException();
+            CommandBuilder.StartSelect();
+            CommandBuilder.AddColumns(columns);
+            return this;
         }
 
         IInsertBuilder ICommand.Insert(string tableName)
         {
-            throw new NotImplementedException();
+            CommandBuilder.AddInsert(tableName);
+            return this;
         }
 
         IUpdateBuilder ICommand.Update(string tableName)
         {
-            throw new NotImplementedException();
+            CommandBuilder.AddUpdate(tableName);
+            return this;
         }
 
         IDropBuilder ICommand.Drop(string tableName)
         {
-            throw new NotImplementedException();
+            CommandBuilder.AddDrop(tableName);
+            return this;
         }
 
         ICreateBuilder ICommand.Create(string tableName)
         {
-            throw new NotImplementedException();
+            CommandBuilder.AddDrop(tableName);
+            return this;
         }
 
         IDeleteQuery ICommand.Delete(string tableName)
