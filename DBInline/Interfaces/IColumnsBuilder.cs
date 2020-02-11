@@ -4,7 +4,7 @@ namespace DBInline.Interfaces
 {
     public interface IColumnsBuilder
     {
-        public IColumnsBuilder Add(string columnName);
+        public IColumnsBuilder Add(params string[] columnName);
         public ISelectBuilder Select();
         public ISelectBuilder Select(params string[] fields);
         public IValuesBuilder Values();
@@ -13,7 +13,7 @@ namespace DBInline.Interfaces
 
     public interface IColumnsBuilder<T>
     {
-        public IColumnsBuilder<T> Add(string columnName);
+        public IColumnsBuilder<T> Add(params string[] columnName);
         public ISelectBuilder<T> Select();
         public ISelectBuilder<T> Select(params string[] fields);
         public IValuesBuilder Values();

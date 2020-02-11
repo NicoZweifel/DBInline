@@ -108,7 +108,7 @@ namespace DBInline.Classes
         {
             throw new NotImplementedException();
         }
-        ISelectBuilder ISelectBuilder<T>.Add(params string[] columnNames)
+        ISelectBuilder<T> ISelectBuilder<T>.Add(params string[] columnNames)
         {
             throw new NotImplementedException();
         }
@@ -128,7 +128,7 @@ namespace DBInline.Classes
             throw new NotImplementedException();
         }
 
-        IColumnsBuilder<T> IColumnsBuilder<T>.Add(string columnName)
+        IColumnsBuilder<T> IColumnsBuilder<T>.Add(params string[] columnName)
         {
             throw new NotImplementedException();
         }
@@ -138,7 +138,7 @@ namespace DBInline.Classes
             throw new NotImplementedException();
         }
 
-        ISelectBuilder<T> IColumnsBuilder<T>.Select(params string[] fields)
+        ISelectBuilder<T> IColumnsBuilder<T>.Select(params string[] columns)
         {
             throw new NotImplementedException();
         }
@@ -152,13 +152,8 @@ namespace DBInline.Classes
         {
             throw new NotImplementedException();
         }
-
-        ISelectBuilder<T> ICommand<T>.Select()
-        {
-            throw new NotImplementedException();
-        }
-
-        ISelectBuilder<T> ICommand<T>.Select(params string[] fields)
+        
+        ISelectBuilder<T> ICommand<T>.Select(params string[] columns)
         {
             throw new NotImplementedException();
         }
@@ -188,7 +183,7 @@ namespace DBInline.Classes
             throw new NotImplementedException();
         }
 
-        ICreateQuery<T> ICreateBuilder<T>.Add(string column, SqlDbType type, int charCount = 0)
+        ICreateQuery<T> ICreateBuilder<T>.Add(string column, SqlDbType type, int charCount)
         {
             throw new NotImplementedException();
         }
@@ -531,16 +526,7 @@ namespace DBInline.Classes
             CreateParameter(parameter.Name, parameter.Value);
             return this;
         }
-
-        internal IQuery Parameters(IEnumerable<IDbDataParameter> paramArray)
-        {
-            foreach (var dbDataParameter in paramArray)
-            {
-                CreateParameter(dbDataParameter.ParameterName, dbDataParameter.Value);
-            }
-            return this;
-        }
-
+        
         IQuery ICommandBuilder.Order(string clause)
         {
             CommandBuilder.AddOr(clause);
@@ -595,10 +581,13 @@ namespace DBInline.Classes
             return this;
         }
 
-        IAddParameter IAddParameter.Parameters(IEnumerable<IDbDataParameter> paramArray)
+        public IAddParameter Params(IEnumerable<IDbDataParameter> paramArray)
         {
-             Parameters(paramArray);
-             return this;
+            foreach (var dbDataParameter in paramArray)
+            {
+                CreateParameter(dbDataParameter.ParameterName, dbDataParameter.Value);
+            }
+            return this;
         }
 
         IAddRollBack IAddRollBack.Rollback(Action action)
@@ -611,7 +600,7 @@ namespace DBInline.Classes
         {
            return CreateParameter(name, value);
         }
-        protected IDbDataParameter Param((string name, object value) valueTuple)
+        internal IDbDataParameter Param((string name, object value) valueTuple)
         {
             var (name, value) = valueTuple;
             return CreateParameter(name, value);
@@ -641,7 +630,7 @@ namespace DBInline.Classes
             throw new NotImplementedException();
         }
 
-        IColumnsBuilder IColumnsBuilder.Add(string columnName)
+        IColumnsBuilder IColumnsBuilder.Add(params string[] columnName)
         {
             throw new NotImplementedException();
         }
@@ -651,7 +640,7 @@ namespace DBInline.Classes
             throw new NotImplementedException();
         }
 
-        ISelectBuilder IColumnsBuilder.Select(params string[] fields)
+        ISelectBuilder IColumnsBuilder.Select(params string[] columns)
         {
             throw new NotImplementedException();
         }
@@ -666,12 +655,7 @@ namespace DBInline.Classes
             throw new NotImplementedException();
         }
 
-        ISelectBuilder ICommand.Select()
-        {
-            throw new NotImplementedException();
-        }
-
-        ISelectBuilder ICommand.Select(params string[] fields)
+        ISelectBuilder ICommand.Select(params string[] columns)
         {
             throw new NotImplementedException();
         }
@@ -716,7 +700,7 @@ namespace DBInline.Classes
             throw new NotImplementedException();
         }
 
-        IInsertFromQuery IInsertFromBuilder.Select(params string[] fields)
+        IInsertFromQuery IInsertFromBuilder.Select(params string[] columns)
         {
             throw new NotImplementedException();
         }

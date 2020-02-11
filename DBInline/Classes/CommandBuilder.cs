@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace DBInline.Classes
 {
+
     internal class CommandBuilder
     {
         private readonly List<string> _whereClauses = new List<string>();
