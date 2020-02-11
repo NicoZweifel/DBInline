@@ -4,7 +4,7 @@ namespace DBInline.Interfaces
     {
         public ICommandBuilder From(string tableName);
     }
-    public interface IColumnsFromQuery<T> :IColumnsBuilder<T>
+    public interface IInsertFromQuery<T> :IColumnsBuilder<T>
     {
         public ICommandBuilder<T> From(string tableName);
     }

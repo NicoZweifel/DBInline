@@ -12,13 +12,32 @@ using Npgsql;
 
 namespace DBInline.Classes
 {
-    internal class Command<T> : Command,ISelectBuilder<T>,IColumnsBuilder<T>,IConditionBuilder<T>,IInsertFromBuilder<T>,IUpdateQuery<T>,IColumnsFromQuery<T>
+    internal class Command<T> : Command,
+        ICommand<T>,
+        IColumnsBuilder<T>,
+        ICommandBuilder<T>,
+        IConditionBuilder<T>,
+        ICreateBuilder<T>,
+        ICreateQuery<T>,
+        IDropBuilder<T>,
+        IDropQuery<T>,
+        IInsertBuilder<T>,
+        IInsertFromBuilder<T>,
+        IInsertFromQuery<T>,
+        IInsertQuery<T>,
+        IQuery<T>,
+        IRowBuilder<T>,
+        ISelectBuilder<T>,
+        ITokenHolder,
+        IUpdateBuilder<T>,
+        IUpdateQuery<T>,
+        IValuesBuilder<T>
     {
         public Command(string commandText, Transaction transaction) : base(commandText, transaction)
         {
         }
 
-        public new T Scalar()
+        T IQuery<T>.Scalar()
         {
             var res = ExecuteScalar();
             if (res == DBNull.Value)
@@ -29,7 +48,7 @@ namespace DBInline.Classes
             return (T) res;
         }
 
-        public new async Task<T> ScalarAsync()
+        async Task<T> IQuery<T>.ScalarAsync()
         {
             var res = await ExecuteScalarAsync(Token).ConfigureAwait(false);
             if (res == DBNull.Value)
@@ -40,17 +59,17 @@ namespace DBInline.Classes
             return (T) res;
         }
 
-        public IEnumerable<T> Get(Func<IDataReader, T> transform)
+        IEnumerable<T> IQuery<T>.Get(Func<IDataReader, T> transform)
         {
             throw new NotImplementedException();
         }
 
-        public Task<List<T>> GetAsync(Func<IDataReader, T> transform)
+        Task<List<T>> IQuery<T>.GetAsync(Func<IDataReader, T> transform)
         {
             throw new NotImplementedException();
         }
 
-        public IAsyncEnumerable<T> GetAsyncEnumerable(Func<IDataReader, T> transform)
+        IAsyncEnumerable<T> IQuery<T>.GetAsyncEnumerable(Func<IDataReader, T> transform)
         {
             throw new NotImplementedException();
         }
@@ -59,6 +78,11 @@ namespace DBInline.Classes
         {
             WhereInternal(fieldName, value);
             return this;
+        }
+
+        IConditionBuilder<T> ICommandBuilder<T>.WhereNot(string fieldName, object value)
+        {
+            throw new NotImplementedException();
         }
 
         IConditionBuilder<T> ICommandBuilder<T>.Where(string clause)
@@ -78,11 +102,154 @@ namespace DBInline.Classes
             OrInternal(fieldName, value);
             return this;
         }
-        
 
+
+        IQuery<T> IInsertBuilder<T>.From(string tableName)
+        {
+            throw new NotImplementedException();
+        }
+        ISelectBuilder ISelectBuilder<T>.Add(params string[] columnNames)
+        {
+            throw new NotImplementedException();
+        }
+
+        IQuery<T> ISelectBuilder<T>.From(string tableName)
+        {
+            throw new NotImplementedException();
+        }
+
+        IInsertBuilder<T> IInsertBuilder<T>.Add(params string[] columnNames)
+        {
+            throw new NotImplementedException();
+        }
+
+        IValuesBuilder<T> IInsertBuilder<T>.Values()
+        {
+            throw new NotImplementedException();
+        }
+
+        IColumnsBuilder<T> IColumnsBuilder<T>.Add(string columnName)
+        {
+            throw new NotImplementedException();
+        }
+
+        ISelectBuilder<T> IColumnsBuilder<T>.Select()
+        {
+            throw new NotImplementedException();
+        }
+
+        ISelectBuilder<T> IColumnsBuilder<T>.Select(params string[] fields)
+        {
+            throw new NotImplementedException();
+        }
+
+        IValuesBuilder IColumnsBuilder<T>.Values()
+        {
+            throw new NotImplementedException();
+        }
+
+        IInsertQuery<T> IColumnsBuilder<T>.Values(params string[] values)
+        {
+            throw new NotImplementedException();
+        }
+
+        ISelectBuilder<T> ICommand<T>.Select()
+        {
+            throw new NotImplementedException();
+        }
+
+        ISelectBuilder<T> ICommand<T>.Select(params string[] fields)
+        {
+            throw new NotImplementedException();
+        }
+
+        IInsertBuilder<T> ICommand<T>.Insert(string tableName)
+        {
+            throw new NotImplementedException();
+        }
+
+        IUpdateBuilder<T> ICommand<T>.Update(string tableName)
+        {
+            throw new NotImplementedException();
+        }
+
+        IDropBuilder<T> ICommand<T>.Drop(string tableName)
+        {
+            throw new NotImplementedException();
+        }
+
+        ICreateBuilder<T> ICommand<T>.Create(string tableName)
+        {
+            throw new NotImplementedException();
+        }
+
+        IDeleteQuery<T> ICommand<T>.Delete(string tableName)
+        {
+            throw new NotImplementedException();
+        }
+
+        ICreateQuery<T> ICreateBuilder<T>.Add(string column, SqlDbType type, int charCount = 0)
+        {
+            throw new NotImplementedException();
+        }
+
+        IDropQuery<T> IDropBuilder<T>.IfExists()
+        {
+            throw new NotImplementedException();
+        }
+
+        IInsertFromQuery<T> IInsertFromBuilder<T>.Select(params string[] columns)
+        {
+            throw new NotImplementedException();
+        }
+
+        ICommandBuilder<T> IInsertFromQuery<T>.From(string tableName)
+        {
+            throw new NotImplementedException();
+        }
+
+        IRowBuilder<T> IRowBuilder<T>.Row()
+        {
+            throw new NotImplementedException();
+        }
+
+        IRowBuilder<T> IRowBuilder<T>.Add<TIn>(TIn value)
+        {
+            throw new NotImplementedException();
+        }
+
+        IUpdateQuery<T> IUpdateBuilder<T>.Set<TParam>(string columnName, TParam value)
+        {
+            throw new NotImplementedException();
+        }
+
+        IRowBuilder<T> IValuesBuilder<T>.Row()
+        {
+            throw new NotImplementedException();
+        }
     }
 
-    public class Command : DbCommand,ISelectBuilder,IInsertBuilder,IConditionBuilder, ITokenHolder,IInsertFromBuilder,IUpdateQuery,IInsertFromQuery
+    public class Command : 
+        DbCommand,
+        ICommand,
+        IColumnsBuilder,
+        ICommandBuilder,
+        IConditionBuilder,
+        ICreateBuilder,
+        ICreateQuery,
+        IDropBuilder,
+        IDropQuery,
+        IInsertBuilder,
+        IInsertFromBuilder,
+        IInsertFromQuery,
+        IInsertQuery,
+        IQuery,
+        IRowBuilder,
+        ISelectBuilder,
+        ITokenHolder,
+        IUpdateBuilder,
+        IUpdateQuery,
+        IValuesBuilder
     {
         public Command(string commandText, Transaction transaction, bool isolated = true)
         {
@@ -147,7 +314,12 @@ namespace DBInline.Classes
             CommandBuilder.BuildClauses(this);
             return DbCommand.ExecuteNonQueryAsync(Token);
         }
-        
+
+        public IDropQuery IfExists()
+        {
+            throw new NotImplementedException();
+        }
+
         public DataSet DataSet()
         {
             CommandBuilder.BuildClauses(this);
@@ -181,7 +353,7 @@ namespace DBInline.Classes
             return dt;
         }
 
-        public async Task<DataTable> TableAsync()
+        async Task<DataTable> IQuery.TableAsync()
         {
             CommandBuilder.BuildClauses(this);
             var dt = new DataTable();
@@ -190,7 +362,7 @@ namespace DBInline.Classes
             return dt;
         }
 
-        public Task<DbDataReader> ReaderAsync()
+        Task<DbDataReader> IQuery.ReaderAsync()
         {
             CommandBuilder.BuildClauses(this);
             return DbCommand.ExecuteReaderAsync(Token);
@@ -200,30 +372,30 @@ namespace DBInline.Classes
             DbCommand.Cancel();
         }
 
-        public T Scalar<T>()
+        T IQuery.Scalar<T>()
         {
             var res = (T) ExecuteScalar();
             return res;
         }
 
-        public async Task<T> ScalarAsync<T>()
+        async Task<T> IQuery.ScalarAsync<T>()
         {
             var res = (T) await ExecuteScalarAsync(Token);
             return res;
         }
 
-        public object Scalar()
+        private object Scalar()
         {
             return ExecuteScalar();
         }
 
-        public async Task<object> ScalarAsync()
+        private async Task<object> ScalarAsync()
         {
             var res = await ExecuteScalarAsync(Token);
             return res;
         }
 
-        public IEnumerable<TOut> Get<TOut>(Func<IDataReader, TOut> transform)
+        IEnumerable<TOut> IQuery.Get<TOut>(Func<IDataReader, TOut> transform)
         {
             CommandBuilder.BuildClauses(this);
             using var r = ExecuteReader();
@@ -281,8 +453,28 @@ namespace DBInline.Classes
         {
             throw new NotImplementedException();
         }
+        
+        ISelectBuilder ISelectBuilder.Add(params string[] columnNames)
+        {
+            throw new NotImplementedException();
+        }
 
-        public object RunScalar()
+        IQuery ISelectBuilder.From(string tableName)
+        {
+            throw new NotImplementedException();
+        }
+        
+        IInsertBuilder IInsertBuilder.Add(params string[] columnNames)
+        {
+            throw new NotImplementedException();
+        }
+
+        IValuesBuilder IInsertBuilder.Values()
+        {
+            throw new NotImplementedException();
+        }
+
+        private object RunScalar()
         {
             var res = ExecuteScalar();
             return res;
@@ -328,12 +520,6 @@ namespace DBInline.Classes
             return DbCommand.ExecuteReader();
         }
         
-        public IQuery Rollback(Action action)
-        {
-            Transaction.Rollback(action);
-            return this;
-        }
-
         IQuery ICommandBuilder.Param(IDbDataParameter parameter)
         {
             CreateParameter(parameter.ParameterName, parameter.Value);
@@ -346,23 +532,22 @@ namespace DBInline.Classes
             return this;
         }
 
-        public IQuery Parameters(IEnumerable<IDbDataParameter> paramArray)
+        internal IQuery Parameters(IEnumerable<IDbDataParameter> paramArray)
         {
             foreach (var dbDataParameter in paramArray)
             {
                 CreateParameter(dbDataParameter.ParameterName, dbDataParameter.Value);
             }
-
             return this;
         }
 
-        public IQuery Order(string clause)
+        IQuery ICommandBuilder.Order(string clause)
         {
             CommandBuilder.AddOr(clause);
             return this;
         }
 
-        public IQuery Limit(int limit)
+        IQuery ICommandBuilder.Limit(int limit)
         {
             CommandBuilder.Limit = limit;
             return this;
@@ -377,6 +562,11 @@ namespace DBInline.Classes
         {
             WhereInternal(fieldName, value);
             return this;
+        }
+
+        IConditionBuilder ICommandBuilder.WhereNot(string fieldName, object value)
+        {
+            throw new NotImplementedException();
         }
 
         private string GenerateParam(string fieldName, object value)
@@ -398,19 +588,6 @@ namespace DBInline.Classes
             CommandBuilder.AddWhere(whereString);
             return this;
         }
-        
-        
-        public IQuery Param(IDbDataParameter parameter)
-        {
-            CreateParameter(parameter.ParameterName, parameter.Value);
-            return this;
-        }
-
-        public IQuery Param(SimpleParameter parameter)
-        {
-            CreateParameter(parameter.Name, parameter.Value);
-            return this;
-        }
 
         IAddParameter IAddParameter.Param(string name, object value)
         {
@@ -430,12 +607,11 @@ namespace DBInline.Classes
             return this;
         }
         
-        public IQuery Param(string name, object value)
+        internal IDbDataParameter Param(string name, object value)
         {
-            CreateParameter(name, value);
-            return this;
+           return CreateParameter(name, value);
         }
-        private IDbDataParameter Param((string name, object value) valueTuple)
+        protected IDbDataParameter Param((string name, object value) valueTuple)
         {
             var (name, value) = valueTuple;
             return CreateParameter(name, value);
@@ -459,6 +635,100 @@ namespace DBInline.Classes
             CommandBuilder.AddOr($"{fieldName}={name}");
         }
 
-    
+
+        IQuery IInsertBuilder.From(string tableName)
+        {
+            throw new NotImplementedException();
+        }
+
+        IColumnsBuilder IColumnsBuilder.Add(string columnName)
+        {
+            throw new NotImplementedException();
+        }
+
+        ISelectBuilder IColumnsBuilder.Select()
+        {
+            throw new NotImplementedException();
+        }
+
+        ISelectBuilder IColumnsBuilder.Select(params string[] fields)
+        {
+            throw new NotImplementedException();
+        }
+
+        IValuesBuilder IColumnsBuilder.Values()
+        {
+            throw new NotImplementedException();
+        }
+
+        IInsertQuery IColumnsBuilder.Values(params string[] values)
+        {
+            throw new NotImplementedException();
+        }
+
+        ISelectBuilder ICommand.Select()
+        {
+            throw new NotImplementedException();
+        }
+
+        ISelectBuilder ICommand.Select(params string[] fields)
+        {
+            throw new NotImplementedException();
+        }
+
+        IInsertBuilder ICommand.Insert(string tableName)
+        {
+            throw new NotImplementedException();
+        }
+
+        IUpdateBuilder ICommand.Update(string tableName)
+        {
+            throw new NotImplementedException();
+        }
+
+        IDropBuilder ICommand.Drop(string tableName)
+        {
+            throw new NotImplementedException();
+        }
+
+        ICreateBuilder ICommand.Create(string tableName)
+        {
+            throw new NotImplementedException();
+        }
+
+        IDeleteQuery ICommand.Delete(string tableName)
+        {
+            throw new NotImplementedException();
+        }
+
+        IRowBuilder IValuesBuilder.Row()
+        {
+            throw new NotImplementedException();
+        }
+
+        IInsertQuery IRowBuilder.Add<TIn>(TIn value)
+        {
+            throw new NotImplementedException();
+        }
+
+        ICreateQuery ICreateBuilder.Add(string column, SqlDbType type, int charCount = 0)
+        {
+            throw new NotImplementedException();
+        }
+
+        IInsertFromQuery IInsertFromBuilder.Select(string[] fields)
+        {
+            throw new NotImplementedException();
+        }
+
+        IRowBuilder IRowBuilder.Row()
+        {
+            throw new NotImplementedException();
+        }
+
+        IUpdateQuery IUpdateBuilder.Set<TParam>(string columnName, TParam value)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
