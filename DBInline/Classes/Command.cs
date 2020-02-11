@@ -711,12 +711,12 @@ namespace DBInline.Classes
             throw new NotImplementedException();
         }
 
-        ICreateQuery ICreateBuilder.Add(string column, SqlDbType type, int charCount = 0)
+        ICreateQuery ICreateBuilder.Add(string column, SqlDbType type, int charCount)
         {
             throw new NotImplementedException();
         }
 
-        IInsertFromQuery IInsertFromBuilder.Select(string[] fields)
+        IInsertFromQuery IInsertFromBuilder.Select(params string[] fields)
         {
             throw new NotImplementedException();
         }

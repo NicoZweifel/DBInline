@@ -11,6 +11,6 @@ namespace DBInline.Interfaces
     public interface ISelectBuilder<T>
     {
         public IQuery<T> From(string tableName);
-        public ISelectBuilder Add(params string[] columnNames);
+        public ISelectBuilder<T> Add(params string[] columnNames);
     }
 }
