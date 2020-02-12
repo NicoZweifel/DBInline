@@ -174,9 +174,10 @@ insertCount2 = p.Query()
             .From(Customers)
             .Run();
 
-//Query 2nd Database
+//Query another Database, in this example a table containing Jsons.
+//Additional databases have to be registered by name in the ContextController class.
 
-var res2 = p.Query<long>(Database2) //Query another Database, in this example a table containing Jsons, additional databases have to be registered by name in the ContextController class.
+var res2 = p.Query<long>(Database2)
     .Select()
     .From("Documents")
     .Where("customerID",5)
