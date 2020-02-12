@@ -15,18 +15,47 @@ namespace DBInline.Test
         {
             using var p = Pool();
 
+            var test = p.Query<int>()
+                .Select()
+                .Add("id")
+                .Add("name")
+                .From(Customers)
+                .Where("id",2)
+                .Scalar();
+
+            var test2 = p.Query<string>()
+                .Update(Customers)
+                .Set("name", "John Doe2")
+                .Set("id",6)
+                .Where("id", 1)
+                .Select()
+                .Add("name")
+                .From(Customers)
+                .Where("id",6)
+                .Scalar();
+
+            var test3 = p.Query<int>()
+                .Update(Customers)
+                .Set("name", "John Doe")
+                .Set("id", 1)
+                .Where("id", 6)
+                .Scalar();
+            
+            
             var list = p.Query()
-                .Set(SelectQuery)
-                .Select(x => (string) x[1])
+                .Select("name")
+                .From(Customers)
+                .Get(x => (string) x[0])
                 .ToList();
 
             Assert.IsTrue(list.Count == 5, "Count should be 5.");
 
             var johnJames = p.Query()
-                .Set(SelectQuery)
+                .Select("name")
+                .From(Customers)
                 .Where("name", "John Doe")
                 .Or("name", "James Smith")
-                .Select(x => (string) x[1])
+                .Get(x => (string) x[0])
                 .ToList();
 
             Assert.IsTrue(johnJames.Count == 2, "Count should be 2.");
@@ -34,7 +63,8 @@ namespace DBInline.Test
             Assert.IsTrue(johnJames.Contains("John Doe"), "Name missing.");
 
             var peter = p.Query<int>()
-                .Set(SelectQuery)
+                .Select()
+                .From(Customers)
                 .Where("name", "Peter Brown")
                 .Scalar();
 
@@ -52,8 +82,9 @@ namespace DBInline.Test
                 var list = new List<string>();
 
                 await foreach (var x in p.Query()
-                    .Set(SelectQuery)
-                    .SelectAsyncEnumerable(x => (string) x[1])
+                    .Select()
+                    .From(Customers)
+                    .GetAsyncEnumerable(x => (string) x[1])
                     .ConfigureAwait(false))
                 {
                     list.Add(x);
@@ -63,10 +94,11 @@ namespace DBInline.Test
 
 
                 var johnJames = (await p.Query()
-                    .Set(SelectQuery)
+                    .Select()
+                    .From(Customers)
                     .Where("name", "John Doe")
                     .Or("name", "James Smith")
-                    .SelectAsync(x => (string) x[1])
+                    .GetAsync(x => (string) x[1])
                     .ConfigureAwait(false)).ToList();
 
                 Assert.IsTrue(johnJames.Count == 2, "Count should be 2.");
@@ -74,7 +106,9 @@ namespace DBInline.Test
                 Assert.IsTrue(johnJames.Contains("John Doe"), "Name missing.");
 
                 var peter = await p.Query<int>()
-                    .Set(SelectQuery)
+                    .Select("id")
+                    .From(Customers)
+                    .Where("name","Peter Brown")
                     .ScalarAsync()
                     .ConfigureAwait(false);
 

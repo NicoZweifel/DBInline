@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System.Data;
+using System.Linq;
 using System.Threading.Tasks;
+using MySqlX.XDevAPI.Relational;
 using NUnit.Framework;
 using static DBInline.Extensions;
 
@@ -15,86 +17,131 @@ namespace DBInline.Test
             using var p = Pool();
 
             p.Query()
-                .Set(DropQuery)
+                .Drop(Customers)
+                .IfExists()
                 .Run();
 
             p.Query()
-                .Set(CreateQuery)
+                .Create(Customers)
+                .Add("id", SqlDbType.Int)
+                .Add("name", SqlDbType.VarChar, 50)
                 .Run();
 
-            p.Commit(); //Test
+            p.Query()
+                .Drop(Employees)
+                .IfExists()
+                .Run();
+
+            p.Query()
+                .Create(Employees)
+                .Add("id", SqlDbType.Int)
+                .Add("name", SqlDbType.VarChar, 50)
+                .Run();
             
+            p.Commit(); //Test
+
             var selCount = p.Query()
-                .Set(SelectQuery)
-                .Select(x => x)
+                .Select("*")
+                .From(Customers)
+                .Get(x => (int) x[0])
                 .ToList()
                 .Count;
 
             Assert.IsTrue(selCount == 0, "Table should be empty.");
 
             var insCount = p.Query()
-                .Set(InsertQuery)
+                .Insert(Customers)
+                .Add("id")
+                .Add("name")
+                .Values()
+                .AddRow()
+                .AddValue(1).AddValue("John Doe")
+                .AddRow()
+                .AddValue(2).AddValue("James Smith")
+                .AddRow()
+                .AddValue(3).AddValue("Jack Williams")
+                .AddRow()
+                .AddValue(4).AddValue("Peter Brown")
+                .AddRow()
+                .AddValue(5).AddValue("Hans Mueller")
                 .Run();
 
             Assert.IsTrue(insCount == 5, "Table should be filled.");
 
             selCount = p.Query()
-                .Set(SelectQuery)
-                .Select(x => x)
-                .ToList()
-                .Count;
-
+                .Insert(Employees)
+                .Add("id")
+                .Add("name")
+                .Select()
+                .Add("id")
+                .Add("name")
+                .From(Customers)
+                .Run();
+            
             p.Commit();
 
             Assert.IsTrue(selCount == 5, "Table should be filled.");
             Assert.Pass();
         }
 
-        [Test, NonParallelizable,Order(1)]
+        [Test, NonParallelizable, Order(1)]
         public async Task DropCreateAsync()
         {
-           await PoolAsync(p =>
-           {
-               
-               p.Query()
-                   .Set(DropQuery)
-                   .Run();
+            await PoolAsync(p =>
+            {
 
-               p.Query()
-                   .Set(CreateQuery)
-                   .Run();
+                p.Query()
+                    .Drop(Customers)
+                    .IfExists()
+                    .Run();
 
-               p.Commit(); //Test
-               
-               var selCount = p.Query()
-                   .Set(SelectQuery)
-                   .Select(x => x)
-                   .ToList()
-                   .Count;
+                p.Query()
+                    .Create(Customers)
+                    .Add("id", SqlDbType.Int)
+                    .Add("name", SqlDbType.VarChar, 50)
+                    .Run();
 
-               Assert.IsTrue(selCount == 0, "Table should be empty.");
+                p.Commit(); //Test
 
-               var insCount = p.Query()
-                   .Set(InsertQuery)
-                   .Run();
+                var selCount = p.Query()
+                    .Select("*")
+                    .From(Customers)
+                    .Get(x => (int) x[0])
+                    .ToList()
+                    .Count;
 
-               Assert.IsTrue(insCount == 5, "Table should be filled.");
+                Assert.IsTrue(selCount == 0, "Table should be empty.");
 
-               p.Commit(); //Test
+                var insCount = p.Query()
+                    .Insert(Customers)
+                    .Add("id")
+                    .Add("name")
+                    .Values()
+                    .AddRow().AddValue(1).AddValue("John Doe")
+                    .AddRow().AddValue(2).AddValue("James Smith")
+                    .AddRow().AddValue(3).AddValue("Jack Williams")
+                    .AddRow().AddValue(4).AddValue("Peter Brown")
+                    .AddRow().AddValue(5).AddValue("Hans Mueller")
+                    .Run();
 
-               selCount = p.Query()
-                   .Set(SelectQuery)
-                   .Select(x => x)
-                   .ToList()
-                   .Count;
-             
-               Assert.IsTrue(selCount == 5, "Table should be filled.");
-               
-               Assert.Pass();
-               
-               p.Commit();
-               
-           }).ConfigureAwait(false);
+                Assert.IsTrue(insCount == 5, "Table should be filled.");
+
+                p.Commit(); //Test
+
+                selCount = p.Query()
+                    .Select("*")
+                    .From(Customers)
+                    .Get(x => x)
+                    .ToList()
+                    .Count;
+
+                Assert.IsTrue(selCount == 5, "Table should be filled.");
+
+                Assert.Pass();
+
+                p.Commit();
+
+            }).ConfigureAwait(false);
         }
     }
 }
