@@ -32,7 +32,8 @@ namespace DBInline.Classes
         IUpdateBuilder<T>,
         IUpdateQuery<T>,
         IValuesBuilder<T>,
-        IDeleteQuery<T>
+        IDeleteQuery<T>,
+        IConditionQuery<T>
     {
         public Command(string commandText, Transaction transaction) : base(commandText, transaction)
         {
@@ -41,22 +42,14 @@ namespace DBInline.Classes
         T IQuery<T>.Scalar()
         {
             var res = ExecuteScalar();
-            if (res == DBNull.Value)
-            {
-                return default;
-            }
-
+            if (res == null || res == DBNull.Value ) return default;
             return (T) res;
         }
 
         async Task<T> IQuery<T>.ScalarAsync()
         {
             var res = await ExecuteScalarAsync(Token).ConfigureAwait(false);
-            if (res == DBNull.Value)
-            {
-                return default;
-            }
-
+            if (res == null || res == DBNull.Value) return default;
             return (T) res;
         }
 
@@ -97,19 +90,19 @@ namespace DBInline.Classes
             await r.CloseAsync().ConfigureAwait(false);
         }
 
-        IConditionBuilder<T> ICommandBuilder<T>.Where(string fieldName, object value)
+        IConditionQuery<T> ICommandBuilder<T>.Where(string fieldName, object value)
         {
             WhereInternal(fieldName, "=",value);
             return this;
         }
 
-        IConditionBuilder<T> ICommandBuilder<T>.WhereNot(string column, object value)
+        IConditionQuery<T> ICommandBuilder<T>.WhereNot(string column, object value)
         {
             WhereInternal(column,"!=",value);
             return this;
         }
 
-        IConditionBuilder<T> ICommandBuilder<T>.Where(string clause)
+        IConditionQuery<T> ICommandBuilder<T>.Where(string clause)
         {
             CommandTextBuilder.AddWhere(clause);
             return this;
@@ -292,7 +285,8 @@ namespace DBInline.Classes
         IUpdateBuilder,
         IUpdateQuery,
         IValuesBuilder,
-        IDeleteQuery
+        IDeleteQuery,
+        IConditionQuery
     {
         public Command(string commandText, Transaction transaction, bool isolated = true)
         {
@@ -410,25 +404,45 @@ namespace DBInline.Classes
 
         T IQuery.Scalar<T>()
         {
-            var res = (T) ExecuteScalar();
-            return res;
+            var res = ExecuteScalar();
+            if (res == null || res == DBNull.Value) return default;
+            return (T) res;
         }
 
         async Task<T> IQuery.ScalarAsync<T>()
         {
-            var res = (T) await ExecuteScalarAsync(Token);
-            return res;
+            var res = await ExecuteScalarAsync(Token);
+            if (res == null || res == DBNull.Value) return default;
+            return (T) res;
         }
 
         private object Scalar()
         {
-                 return ExecuteScalar();
+            return ExecuteScalar();
         }
 
         private async Task<object> ScalarAsync()
         {
             var res = await ExecuteScalarAsync(Token);
             return res;
+        }
+
+        public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
+        {
+            CommandTextBuilder.SetCommandText(this);
+            return base.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
+        {
+            CommandTextBuilder.SetCommandText(this);
+            return base.ExecuteScalarAsync(cancellationToken);
+        }
+
+        protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+        {
+            CommandTextBuilder.SetCommandText(this);
+            return base.ExecuteDbDataReaderAsync(behavior, cancellationToken);
         }
 
         IEnumerable<TOut> IQuery.Get<TOut>(Func<IDataReader, TOut> transform)
@@ -539,6 +553,7 @@ namespace DBInline.Classes
         
         public override void Prepare()
         {
+            CommandTextBuilder.SetCommandText(this);
             DbCommand.Prepare();
         }
 
@@ -583,18 +598,19 @@ namespace DBInline.Classes
             return this;
         }
         
-        IConditionBuilder ICommandBuilder.Where(string clause)
+        IConditionQuery ICommandBuilder.Where(string clause)
         {
-            return Where(clause);
+             Where(clause);
+             return this;
         }
 
-        IConditionBuilder ICommandBuilder.Where(string columnName, object value)
+        IConditionQuery ICommandBuilder.Where(string columnName, object value)
         {
             WhereInternal(columnName, "=",value);
             return this;
         }
 
-        IConditionBuilder ICommandBuilder.WhereNot(string columnName, object value)
+        IConditionQuery ICommandBuilder.WhereNot(string columnName, object value)
         {
             WhereInternal(columnName, "!=",value);
             return this;
@@ -652,6 +668,18 @@ namespace DBInline.Classes
         }
         
         IConditionBuilder IConditionBuilder.Or(string clause)
+        {
+            CommandTextBuilder.AddOr(clause);
+            return this;
+        }
+
+        public IConditionQuery Or(string fieldName, object value)
+        {
+            OrInternal(fieldName, value);
+            return this;
+        }
+
+        public IConditionQuery Or(string clause)
         {
             CommandTextBuilder.AddOr(clause);
             return this;

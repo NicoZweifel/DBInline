@@ -23,7 +23,7 @@ namespace DBInline.Test
                 .Where("id",2)
                 .Scalar();
 //doesnt work yet
-            var test2 = p.Query<int>()
+            var test2 = p.Query<string>()
                 .Update(TableName)
                 .Set("name", "John Doe2")
                 .Set("id",6)
@@ -33,6 +33,14 @@ namespace DBInline.Test
                 .From(TableName)
                 .Where("id",6)
                 .Scalar();
+
+            var test3 = p.Query<int>()
+                .Update(TableName)
+                .Set("name", "John Doe")
+                .Set("id", 1)
+                .Where("id", 6)
+                .Scalar();
+            
             
 //the rest works
             var list = p.Query()

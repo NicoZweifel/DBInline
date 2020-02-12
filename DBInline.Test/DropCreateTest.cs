@@ -23,7 +23,7 @@ namespace DBInline.Test
 
             p.Query()
                 .Create(TableName)
-                .Add("dbid", SqlDbType.Int)
+                .Add("id", SqlDbType.Int)
                 .Add("name", SqlDbType.VarChar, 50)
                 .Run();
 
@@ -46,8 +46,8 @@ namespace DBInline.Test
                 .Row().Add(1).Add("John Doe")
                 .Row().Add(2).Add("James Smith")
                 .Row().Add(3).Add("Jack Williams")
-                .Row().Add(3).Add("Peter Brown")
-                .Row().Add(3).Add("Hans Mueller")
+                .Row().Add(4).Add("Peter Brown")
+                .Row().Add(5).Add("Hans Mueller")
                 .Run();
 
             Assert.IsTrue(insCount == 5, "Table should be filled.");
@@ -78,7 +78,7 @@ namespace DBInline.Test
 
                 p.Query()
                     .Create(TableName)
-                    .Add("dbid", SqlDbType.Int)
+                    .Add("id", SqlDbType.Int)
                     .Add("name", SqlDbType.VarChar, 50)
                     .Run();
 
@@ -101,8 +101,8 @@ namespace DBInline.Test
                     .Row().Add(1).Add("John Doe")
                     .Row().Add(2).Add("James Smith")
                     .Row().Add(3).Add("Jack Williams")
-                    .Row().Add(3).Add("Peter Brown")
-                    .Row().Add(3).Add("Hans Mueller")
+                    .Row().Add(4).Add("Peter Brown")
+                    .Row().Add(5).Add("Hans Mueller")
                     .Run();
 
                 Assert.IsTrue(insCount == 5, "Table should be filled.");

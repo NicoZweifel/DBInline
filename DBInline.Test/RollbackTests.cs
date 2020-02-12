@@ -51,7 +51,7 @@ namespace DBInline.Test
                         .ToList();
                 });
                 
-                Assert.IsTrue(!l.Any(), "Rollback has failed!");
+                Assert.IsTrue(l.Count == 5, "Rollback has failed!");
             }
             Assert.Pass();
         }
@@ -140,7 +140,7 @@ namespace DBInline.Test
                         .ToList();
                 });
                 
-                Assert.IsTrue(!l.Any(), "Rollback has failed!");
+                Assert.IsTrue(l.Any(), "Rollback has failed!");
             }
             Assert.Pass();
         }
@@ -183,7 +183,7 @@ namespace DBInline.Test
                         .ToList();
                 }).ConfigureAwait(false);
                 
-                Assert.IsTrue(!l.Any(), "Rollback has failed!");
+                Assert.IsTrue(l.Count == 5, "Rollback has failed!");
             }
             Assert.Pass();
         }
@@ -216,7 +216,7 @@ namespace DBInline.Test
                         .ToList();
                 });
                 
-                Assert.IsTrue(!l.Any(), "Rollback has failed!");
+                Assert.IsTrue(l.Count == 5, "Rollback has failed!");
             }
             Assert.Pass();
         }
@@ -250,7 +250,7 @@ namespace DBInline.Test
                         .ToList();
                 }).ConfigureAwait(false);
                 
-                Assert.IsTrue(!l.Any(), "Rollback has failed!");
+                Assert.IsTrue(l.Count == 5, "Rollback has failed!");
             }
             Assert.Pass();
         }

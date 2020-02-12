@@ -87,10 +87,15 @@ namespace DBInline.Classes
 
         private void CheckCurrentCommand(string tableName)
         {
-            _currentTable = tableName;
-            if (_currentCommand == 0) return;
+            if (_currentCommand == 0)
+            {
+                _currentTable = tableName;
+                return;
+            }
             BuildCommandText();
             BuildClauses();
+            _commandText += $";{Environment.NewLine}";
+            _currentTable = tableName;
         }
 
         public void AddSelect()
@@ -146,8 +151,9 @@ namespace DBInline.Classes
         
         public void AddToRow<TIn>(TIn value)
         {
+            var val = value is string ? $"'{value}'" : value.ToString();
             if (_values[^1].Any()) _values[^1] += ",";
-            _values[^1] += $"{value}";
+            _values[^1] += $"{val}";
         }
 
         public void AddRow()
@@ -157,8 +163,8 @@ namespace DBInline.Classes
 
         public void AddColumnDefinition(string column, SqlDbType type, in int charCount)
         {
-            var def = charCount > 0 ? $"{charCount}" : "";
-            _values.Add($"{column}{type}({def})");
+            var def = charCount > 0 ? $"({charCount})" : "";
+            _values.Add($"{column} {type}{def}");
         }
         
         public void AddInsertFromColumns(IEnumerable<string> columns)
@@ -184,7 +190,8 @@ namespace DBInline.Classes
                 case QueryType.None:
                     break;
                 case QueryType.Select:
-                    _commandText += $" SELECT {string.Join(",", _columns)} FROM \"{_currentTable}\" ";
+                    var columns = _columns.Any() ? string.Join(",", _columns) : "*";
+                    _commandText += $" SELECT {columns} FROM \"{_currentTable}\" ";
                     break;
                 case QueryType.Insert:
                     _commandText +=

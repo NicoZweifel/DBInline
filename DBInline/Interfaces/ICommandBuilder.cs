@@ -11,15 +11,15 @@ namespace DBInline.Interfaces
         public IQuery Limit(int limit);
         public IQuery Param(IDbDataParameter parameter);
         public IQuery Param(SimpleParameter parameter);
-        public IConditionBuilder Where(string clause);
-        public IConditionBuilder Where(string fieldName, object value);
-        public IConditionBuilder WhereNot(string fieldName, object value);
+        public IConditionQuery Where(string clause);
+        public IConditionQuery Where(string fieldName, object value);
+        public IConditionQuery WhereNot(string fieldName, object value);
     }
     public interface ICommandBuilder<T> : ICommandBuilder
     {
-        public new IConditionBuilder<T> Where(string clause);
-        public new IConditionBuilder<T> Where(string fieldName, object value);
-        public new IConditionBuilder<T> WhereNot(string fieldName, object value);
+        public new IConditionQuery<T> Where(string clause);
+        public new IConditionQuery<T> Where(string fieldName, object value);
+        public new IConditionQuery<T> WhereNot(string fieldName, object value);
     }
 
 }
