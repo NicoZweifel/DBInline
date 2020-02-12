@@ -1,8 +1,11 @@
-# DBInline 1.0.0-pre-release ![.NET Core develop](https://github.com/NicoZweifel/DBInline/workflows/.NET%20Core%20develop/badge.svg)
+# DBInline 1.0.0-pre-release 
+
+![.NET Core develop](https://github.com/NicoZweifel/DBInline/workflows/.NET%20Core%20develop/badge.svg)
+![.NET Core master](https://github.com/NicoZweifel/DBInline/workflows/.NET%20Core%20master/badge.svg)
 
 - WIP
 - Currently all Tests pass.
-- Before using this in production, more testing should be done.
+- Before using this in production, more extensive tests should be written, since there might still be bugs/unintended behaviour.
 
 # Summary
 
@@ -10,9 +13,7 @@
   commands and also pool different Databases together in the code.
   
 - Contains various wrappers/static methods/overloads for different Database use-cases.
- 
-- Seperate simpler interfaces for Insert/Select/Update/Delete and Subqueries are currently in the works (feature/CommandBuilders) and will follow soon.
-  
+
 - Rollbacks/Disposing is handled in the background.
 
 - Commits, Rollbacks all transactions/connections of multiple databases are created and handled together.
@@ -71,7 +72,8 @@
 var t = Transaction(t =>
 {
    return t.Query<string>()
-       .Set('Some query')
+       .Select("id, name")   // Column,Value Parameters are always param string[], alternatively the returned Builders can add fields/columns with Add()
+       .From("Customers")
        .Where("name","John Doe") //Parameters can be generated like this.
        .Or("name","Peter Brown") // Or condition will always be added to the last where condition like so: WHERE (name=@generatedParam_1 OR name=@generatedParam2)
        .Limit(5) // Setting Result count limit
@@ -88,7 +90,10 @@ var t = Transaction(t =>
 return await TransactionAsync(t =>
             {
                return t.Query<string>()
-                    .Set('Some query')
+                    .Select()
+                    .Add("id") //Columns can also be added like this.
+                    .Add("name") 
+                    .From("Customers")
                     .Param("name","John Doe") //Adding parameter with name and value.
                     .Param(some IDbParameter Implementation) //Adding IDbParameter.
                     .Param(("@name","Peter Brown") //Adding parameter as ValueTuple.
@@ -97,6 +102,146 @@ return await TransactionAsync(t =>
                     .Select(r => (string) r[0]) //Create the objects
                     .ToList();
             });
+```
+
+# Pool / various Sql Wrapper Examples
+
+```cs
+using var p = Pool(); 
+
+//SELECT
+
+var customers = !p.Query()
+    .Select()
+    .From("Customers")
+    .limit(5)
+    .Select(r => (string)r[0]) //create desired object.
+    .ToList();
+
+//UPDATE
+
+var i = p.Query()
+    .Update("Customers")
+    .Where("DBID", 10)
+    .AddRollback(() =>
+    {
+       Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
+    })
+    .Run(); //ExecuteNonQuery
+
+//DELETE
+
+p.Query()
+    .Delete("Customers")
+    .Where("DBID", 5)
+    .AddRollback(() =>
+    {
+        Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
+    })
+    .Select() //Chaining Delete + Select query together
+    From("Customers")
+    .Get(x => new Customer((int) x[0], (string) x[1]));
+
+//INSERT INTO ... VALUES
+
+var insertCount1 = p.Query() 
+    .Insert(Customers) //InsertBuilder
+    .Add("id")
+    .Add("name")
+    .Values()
+    .AddRow()
+    .AddValue(1).AddValue("John Doe")
+    .AddRow()
+    .AddValue(2).AddValue("James Smith")
+    .AddRow()
+    .AddValue(3).AddValue("Jack Williams")
+    .AddRow()
+    .AddValue(4).AddValue("Peter Brown")
+    .AddRow()
+    .AddValue(5).AddValue("Hans Mueller")
+    .Run();
+
+
+//INSERT INTO ... SELECT
+
+insertCount2 = p.Query()
+            .Insert(Employees)
+            .Add("id")
+            .Add("name")
+            .Select()
+            .Add("id")
+            .Add("name")
+            .From(Customers)
+            .Run();
+
+//Query 2nd Database
+
+var res2 = p.Query<long>(Database2) //Query another Database, in this example a table containing Jsons, additional databases have to be registered by name in the ContextController class.
+    .Select()
+    .From("Documents")
+    .Where("customerID",5)
+    .Table() 
+    .ToJson(); //Convert DataTable to Json skipping Serialization/Deserialization of objects.
+
+p.Commit();  //With the using statement in place, if this is not called everything will be rollbacked.
+```
+# Pool lambda Examples:
+```cs
+return Pool(p =>
+    {
+        var res1 = p.Query<DataTable>()
+            .Select()
+            .From("Customers")
+            .Where("DBID", 10)
+            .Or("DBID",11)
+            .Table(); //Select as Datatable
+        return res1.ToJson() //Extension to immediately create Json out of a Datatable;
+    });
+}          
+```
+- Or:
+```cs
+var t =PoolAsync(p => ...            
+```        
+- async lambdas are only handled in the Pool-Extensions:         
+```cs 
+return await PoolAsync(async p =>
+{
+    var list = new List<string>();
+    
+    await foreach (var x in p.Query()
+        .Set(SelectQuery)
+        .SelectAsyncEnumerable(x => (string) x[1])) //Selecting IAsyncIEnumerable<T>
+        {
+            list.Add(x);
+        }
+    
+    var johnJames = (await p.Query()
+        .Select("name")
+        .From("Customers")
+        .Where("name", "John Doe")
+        .Or("name", "James Smith")
+        .SelectAsync(x => (string) x[1]) //Selecting Task<List<string>>
+        .ConfigureAwait(false));
+    
+    var customers = await p.Query<int>()
+        .Select("id","name")
+        .From("Customers")
+        .SelectAsync(x => new Customer(x)) //Create some object.
+        .ConfigureAwait(false);
+
+    p.Query<string>()  //UPDATE + SELECT
+        .Update(TableName)
+        .Set("name", "John Doe2")
+        .Set("id",6)
+        .Where("id", 1)
+        .Select()
+        .Add("name")
+        .From(TableName)
+        .Where("id",6)
+        .Scalar();
+        
+}).ConfigureAwait(false);
 ```
 
 # CMD/QueryRun Examples (these will probably be removed):
@@ -114,90 +259,6 @@ return await QueryAsync<List<string>>('Some query', cmd =>
                 }
             });
 
-```
-
-# Pool Examples
-
-```cs
-using var p = Pool(); 
-var i = p.Query()
-    .Set('Some update/delete query')
-    .Where("DBID", 10)
-    .AddRollback(() =>
-    {
-       Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
-    })
-    .Run(); //ExecuteNonQuery
-
-var res1 = !p.Query()
-    .Set('Some select query')
-    .limit(10)
-    .Select(r => (string)r[0]) //create desired object.
-    .ToList();
-
-for (var counter = 1; counter< 10;counter++)
-{
-    p.Query()
-        .Set('Update/delete query')
-        .Where("DBID", counter)
-        .AddRollback(() =>
-        {
-            Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
-        })
-        .Run(); //ExecuteNonQuery
-}
-
-var res2 = p.Query<long>(Database2) //Query another Database
-    .Set('Some query')
-    .Param("param", "value") //Add parameter with name and value
-    .Where("DBID > @param")
-    .Scalar(); //ExecuteScalar
-
-p.Commit();  //With the using statement in place, if this is not called everything will be rollbacked.
-```
-# Pool lambda Examples:
-```cs
-return Pool(p =>
-    {
-        var res1 = p.Query<DataTable>()
-            .Set('Some select query')
-            .Where("DBID", 10)
-            .Or("DBID",11)
-            .Table(); //Select as Datatable
-        return res1.ToJson() //Extension to immediately create Json out of a Datatable;
-    });
-}          
-```
-- Or:
-```cs
-var t =PoolAsync(p => ...            
-```        
-- async lambdas are only handled in the Pool-Extensions:         
-```cs 
-return await PoolAsync(async p =>
-                   {
-                       var list = new List<string>();
-       
-                       await foreach (var x in p.Query()
-                           .Set(SelectQuery)
-                           .SelectAsyncEnumerable(x => (string) x[1])) //Selecting IAsyncIEnumerable<T>
-                       {
-                           list.Add(x);
-                       }
-       
-                       var johnJames = (await p.Query()
-                           .Set(SelectQuery)
-                           .Where("name", "John Doe")
-                           .Or("name", "James Smith")
-                           .SelectAsync(x => (string) x[1]) //Selecting Task<List<T>>
-                           .ConfigureAwait(false));
-       
-                       var peter = await p.Query<int>()
-                           .Set(SelectQuery)
-                           .ScalarAsync()
-                           .ConfigureAwait(false);
-       
-                   }).ConfigureAwait(false);
 ```
 
 # Tests

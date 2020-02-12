@@ -20,12 +20,13 @@ namespace DBInline.Test
                 using var p = Pool();
                 
                 p.Query()
-                    .Set(DeleteQuery)
+                    .Delete(Customers)
                     .Run();
 
                 var l = p.Query()
-                    .Set(SelectQuery)
-                    .Select(x => x)
+                    .Select("name")
+                    .From(Customers)
+                    .Get(x =>(string) x[0])
                     .ToList();
 
                 Assert.IsTrue(!l.Any(), "Table should be empty.");
@@ -43,12 +44,14 @@ namespace DBInline.Test
                 var l = Transaction(t =>
                 {
                     return t.Query()
-                        .Set(SelectQuery)
-                        .Select(x => (int) x[0])
+                        .Select()
+                        .Add("name")
+                        .From(Customers)
+                        .Get(x =>(string) x[0])
                         .ToList();
                 });
                 
-                Assert.IsTrue(!l.Any(), "Rollback has failed!");
+                Assert.IsTrue(l.Count == 5, "Rollback has failed!");
             }
             Assert.Pass();
         }
@@ -62,13 +65,14 @@ namespace DBInline.Test
                 Pool(async p =>
                 {
                     await p.Query()
-                        .Set(DeleteQuery)
+                        .Delete(Customers)
                         .RunAsync()
                         .ConfigureAwait(false);
 
                     var l = p.Query()
-                        .Set(SelectQuery)
-                        .Select(x => x)
+                        .Select("id")
+                        .From(Customers)
+                        .Get(x =>(int) x[0])
                         .ToList();
 
                     Assert.IsTrue(!l.Any(), "Table should be empty.");
@@ -87,8 +91,11 @@ namespace DBInline.Test
                 var l = Transaction(t =>
                 {
                     return t.Query()
-                        .Set(SelectQuery)
-                        .Select(x => (int) x[0])
+                        .Select()
+                        .Add("id")
+                        .Add("name")
+                        .From(Customers)
+                        .Get(x => ((int)x[0] ,(string)x[1]))
                         .ToList();
                 });
                 Assert.IsTrue(!l.Any(), "Rollback has failed!");
@@ -104,12 +111,13 @@ namespace DBInline.Test
                 await PoolAsync(p =>
                 {
                     p.Query()
-                        .Set(DeleteQuery)
+                        .Delete(Customers)
                         .Run();
-
+                    
                     var selCount = p.Query()
-                        .Set(SelectQuery)
-                        .Select(x => x)
+                        .Select()
+                        .From(Customers)
+                        .Get(x =>(int) x[0])
                         .ToList()
                         .Count;
                     
@@ -126,12 +134,13 @@ namespace DBInline.Test
                 var l = Transaction(t =>
                 {
                     return t.Query()
-                        .Set(SelectQuery)
-                        .Select(x => (int) x[0])
+                        .Select()
+                        .From(Customers)
+                        .Get(x =>(int) x[0])
                         .ToList();
                 });
                 
-                Assert.IsTrue(!l.Any(), "Rollback has failed!");
+                Assert.IsTrue(l.Any(), "Rollback has failed!");
             }
             Assert.Pass();
         }
@@ -144,13 +153,14 @@ namespace DBInline.Test
                 await PoolAsync(async p =>
                 {
                     await p.Query()
-                        .Set(DeleteQuery)
-                        .RunAsync()
+                            .Delete(Customers)
+                            .RunAsync()
                         .ConfigureAwait(false);
 
                     var count = (await p.Query()
-                            .Set(SelectQuery)
-                            .SelectAsync(x => x)
+                            .Select()
+                            .From(Customers)
+                            .GetAsync(x => x)
                             .ConfigureAwait(false))
                         .Count;
 
@@ -167,12 +177,13 @@ namespace DBInline.Test
                 var l = await TransactionAsync(t =>
                 {
                     return t.Query()
-                        .Set(SelectQuery)
-                        .Select(x => (int) x[0])
+                        .Select()
+                        .From(Customers)
+                        .Get(x => (int) x[0])
                         .ToList();
                 }).ConfigureAwait(false);
                 
-                Assert.IsTrue(!l.Any(), "Rollback has failed!");
+                Assert.IsTrue(l.Count == 5, "Rollback has failed!");
             }
             Assert.Pass();
         }
@@ -185,7 +196,7 @@ namespace DBInline.Test
                 Transaction(t =>
                 {
                     t.Query()
-                        .Set(DeleteQuery)
+                        .Delete(Customers)
                         .Run();
                     
                     throw new TestException();
@@ -199,12 +210,13 @@ namespace DBInline.Test
                 var l = Transaction(t =>
                 {
                     return t.Query()
-                        .Set(SelectQuery)
-                        .Select(x => (int) x[0])
+                        .Select()
+                        .From(Customers)
+                        .Get(x =>(int) x[0])
                         .ToList();
                 });
                 
-                Assert.IsTrue(!l.Any(), "Rollback has failed!");
+                Assert.IsTrue(l.Count == 5, "Rollback has failed!");
             }
             Assert.Pass();
         }
@@ -217,7 +229,8 @@ namespace DBInline.Test
                 await TransactionAsync(t =>
                 {
                     t.Query()
-                        .Set(DeleteQuery)
+                        .Delete(Customers)
+                        .Where("id < 10")
                         .Run();
                     
                     throw new TestException();
@@ -231,12 +244,13 @@ namespace DBInline.Test
                 var l = await TransactionAsync(t =>
                 {
                     return t.Query()
-                        .Set(SelectQuery)
-                        .Select(x => (int) x[0])
+                        .Select()
+                        .From(Customers)
+                        .Get(x =>(int) x[0])
                         .ToList();
                 }).ConfigureAwait(false);
                 
-                Assert.IsTrue(!l.Any(), "Rollback has failed!");
+                Assert.IsTrue(l.Count == 5, "Rollback has failed!");
             }
             Assert.Pass();
         }

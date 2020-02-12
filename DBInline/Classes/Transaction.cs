@@ -69,7 +69,7 @@ namespace DBInline.Classes
             return p;
         }
 
-        public IAddParameter Parameters(IEnumerable<IDbDataParameter> paramArray)
+        public IAddParameter Params(IEnumerable<IDbDataParameter> paramArray)
         {
             foreach (var p in paramArray)
             {
