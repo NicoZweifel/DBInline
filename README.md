@@ -53,7 +53,7 @@
 - Some of them might be removed for clearer Usage and improved generic type inference.
 
 - Since everything is connected through interfaces, all these methods can be mixed,
-  it all comes down to a IQueryBuilder and IConnectionSource Interfaces.
+  it all comes down to builder interfaces and an IConnectionSource Interface.
 
 # Using Pool
 
