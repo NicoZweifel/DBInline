@@ -43,7 +43,7 @@ namespace DBInline
         /// Executes SqlCommand.
         /// </summary>
         /// <param name="body">Use the command.</param>
-        public static T QueryRun<T>(Func<IQuery<T>, T> body)
+        public static T QueryRun<T>(Func<ICommand<T>, T> body)
         {
             return QueryRun("",  body);
         }
@@ -72,7 +72,7 @@ namespace DBInline
             return @this.Transaction(tran =>
             {
                 using var cmd = new Command<T>(command, tran);
-                cmd.Parameters(parameters ?? new IDbDataParameter[] { });
+                cmd.Params(parameters ?? new IDbDataParameter[] { });
                 cmd.ExecuteNonQuery();
                 return @this;
             });
@@ -108,7 +108,7 @@ namespace DBInline
         /// <param name="command">CommandText.</param>
         /// <typeparam name="T">Generic Type T</typeparam>
         /// <returns>Database Query Result of Type T.</returns>
-        public static T QueryRun<T>(string command, Func<IQuery<T>, T> body)
+        public static T QueryRun<T>(string command, Func<ICommand<T>, T> body)
         {
             return Transaction(tran =>
             {
@@ -127,7 +127,7 @@ namespace DBInline
         /// <param name="database">Desired database.</param>
         /// <typeparam name="T">Generic Type T</typeparam>
         /// <returns>Database Query Result of Type T.</returns>
-        public static T QueryRun<T>(string database,string command ,  Func<IQuery<T>, T> body)
+        public static T QueryRun<T>(string database,string command ,  Func<ICommand<T>, T> body)
         {
             return ContextController.ContextByName[database].Transaction(tran =>
             {
@@ -149,7 +149,7 @@ namespace DBInline
         /// <param name="token">Cancellation token.</param>
         /// <typeparam name="T">Generic Type T</typeparam>
         /// <returns>Database Query Result of Type T.</returns>
-        public static Task<T> QueryAsync<T>(string command, Func<IQuery<T>, T> body, CancellationToken token)
+        public static Task<T> QueryAsync<T>(string command, Func<ICommand<T>, T> body, CancellationToken token)
         {
             return Task.Run(() => QueryRun(null,command ,body), token);
         }
@@ -163,7 +163,7 @@ namespace DBInline
         /// <param name="this">Desired database context.</param>
         /// <typeparam name="T">Generic Type T.</typeparam>
         /// <returns>Database Query Result of Type T.</returns>
-        public static async Task<T> QueryAsync<T>(this IConnectionSource @this, Func<IQuery<T>, T> body)
+        public static async Task<T> QueryAsync<T>(this IConnectionSource @this, Func<ICommand<T>, T> body)
         {
             return await @this.QueryAsync("", body, CancellationToken.None).ConfigureAwait(false);
         }
@@ -179,7 +179,7 @@ namespace DBInline
         /// <param name="this">Desired database context.</param>
         /// <typeparam name="T">Generic Type T.</typeparam>
         /// <returns>Database Query Result of Type T.</returns>
-        public static async Task<T> QueryAsync<T>(this IConnectionSource @this, string command, Func<IQuery<T>, T> body)
+        public static async Task<T> QueryAsync<T>(this IConnectionSource @this, string command, Func<ICommand<T>, T> body)
         {
             return await @this.QueryAsync(command, body, CancellationToken.None).ConfigureAwait(false);
         }
@@ -194,7 +194,7 @@ namespace DBInline
         /// <param name="this">Desired database context.</param>
         /// <typeparam name="T">Generic Type T</typeparam>
         /// <returns>Database Query Result of Type T.</returns>
-        public static async Task<T> QueryAsync<T>(this IConnectionSource @this, Func<IQuery<T>, T> body,
+        public static async Task<T> QueryAsync<T>(this IConnectionSource @this, Func<ICommand<T>, T> body,
             CancellationToken token)
         {
             return await @this.QueryAsync("", body, token).ConfigureAwait(false);
@@ -211,7 +211,7 @@ namespace DBInline
         /// <param name="this">Desired database context.</param>
         /// <typeparam name="T">Generic Type T</typeparam>
         /// <returns>Database Query Result of Type T.</returns>
-        public static Task<T> QueryAsync<T>(this IConnectionSource @this, string command, Func<IQuery<T>, T> body,
+        public static Task<T> QueryAsync<T>(this IConnectionSource @this, string command, Func<ICommand<T>, T> body,
             CancellationToken token)
         {
             return @this.TransactionAsync(tran =>
@@ -246,7 +246,7 @@ namespace DBInline
         /// <param name="database">Name of the database.</param>
         /// <typeparam name="T">Generic Type T.</typeparam>
         /// <returns>Database Query Result of Type T.</returns>
-        public static IQuery<T> Query<T>(this IConnectionSource @this,string database)
+        public static ICommand<T> Query<T>(this IConnectionSource @this,string database)
         {
             return @this.Transaction(database).Query<T>();
         }
@@ -258,7 +258,7 @@ namespace DBInline
         /// <param name="this">Desired IConnectionSource.</param>
         /// <param name="database">Name of the database.</param>
         /// <returns>Database Query Result of Type T.</returns>
-        public static IQuery Query(this IConnectionSource @this, string database)
+        public static ICommand Query(this IConnectionSource @this, string database)
         {
             return @this.Transaction(database).Query();
         }
@@ -270,7 +270,7 @@ namespace DBInline
         /// <param name="this">Desired IConnectionSource.</param>
         /// <typeparam name="T">Generic Type T.</typeparam>
         /// <returns>Database Query Result of Type T.</returns>
-        public static IQuery<T> Query<T>(this IConnectionSource @this)
+        public static ICommand<T> Query<T>(this IConnectionSource @this)
         {
             return @this.Transaction(tran => new Command<T>("",tran));
         }
@@ -280,7 +280,7 @@ namespace DBInline
         /// </summary>
         /// <param name="this">Desired IConnectionSource.</param>
         /// <returns>Database Query Result of Type T.</returns>
-        public static IQuery Query(this IConnectionSource @this)
+        public static ICommand Query(this IConnectionSource @this)
         {
             return @this.Transaction(tran => new Command("", tran));
         }
@@ -319,51 +319,6 @@ namespace DBInline
             });
         }
 
-        #endregion
-
-        #region "CmdScalar"
-
-        /// <summary>
-        /// Executes Command and returns first result of the first row.
-        /// </summary>
-        /// <param name="command">CommandText.</param>
-        /// <typeparam name="T">Generic Type T.</typeparam>
-        /// <returns>Database Query Result of Type T.</returns>
-        public static T CmdScalar<T>(string command)
-        {
-            return QueryRun<T>(command, cmd => cmd.Scalar());
-        }
-
-        
-        /// <summary>
-        /// Executes Command and returns first result of the first row.
-        /// </summary>
-        /// <param name="command">CommandText.</param>
-        /// <param name="parameterBuilder">Add parameters.</param>
-        /// <typeparam name="T">Generic Type T.</typeparam>
-        /// <returns>Database Query Result of Type T.</returns>
-        public static T CmdScalar<T>(string command, Action<IQuery<T>> parameterBuilder)
-        {
-            return QueryRun<T>(command, cmd =>
-            {
-                parameterBuilder(cmd);
-                return cmd.Scalar();
-            });
-        }
-
-        /// <summary>
-        /// Executes Command and returns first result of the first row.
-        /// </summary>
-        /// <param name="command">CommandText.</param>
-        /// <param name="parameters">ParameterCollection.</param>
-        /// <typeparam name="T">Generic Type T.</typeparam>
-        /// <returns>Database Query Result of Type T.</returns>
-        // ReSharper disable once UnusedParameter.Global
-        public static T CmdScalar<T>(string command, IEnumerable<IDbDataParameter> parameters)
-        {
-            return QueryRun<T>(command, cmd => cmd.Scalar());
-        }
-        
         #endregion
     }
 }

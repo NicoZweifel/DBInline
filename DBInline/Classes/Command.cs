@@ -12,108 +12,267 @@ using Npgsql;
 
 namespace DBInline.Classes
 {
-    internal class Command<T> : Command, IQueryBuilder<Command<T>, T>
+    internal class Command<T> : Command,
+        ICommand<T>,
+        IColumnsBuilder<T>,
+        ICommandBuilder<T>,
+        IConditionBuilder<T>,
+        ICreateBuilder<T>,
+        ICreateQuery<T>,
+        IDropBuilder<T>,
+        IDropQuery<T>,
+        IInsertBuilder<T>,
+        IInsertQuery<T>,
+        IQuery<T>,
+        IRowBuilder<T>,
+        ISelectBuilder<T>,
+        ITokenHolder,
+        IUpdateBuilder<T>,
+        IUpdateQuery<T>,
+        IValuesBuilder<T>,
+        IDeleteQuery<T>,
+        IConditionQuery<T>
     {
         public Command(string commandText, Transaction transaction) : base(commandText, transaction)
         {
         }
 
-        public new T Scalar()
+        T IQuery<T>.Scalar()
         {
             var res = ExecuteScalar();
-            if (res == DBNull.Value)
-            {
-                return default;
-            }
-
+            if (res == null || res == DBNull.Value ) return default;
             return (T) res;
         }
 
-        public new async Task<T> ScalarAsync()
+        async Task<T> IQuery<T>.ScalarAsync()
         {
             var res = await ExecuteScalarAsync(Token).ConfigureAwait(false);
-            if (res == DBNull.Value)
-            {
-                return default;
-            }
-
+            if (res == null || res == DBNull.Value) return default;
             return (T) res;
         }
+
+        IEnumerable<T> IQuery<T>.Get(Func<IDataReader, T> transform)
+        {
+            var res = new List<T>();
+            using var r =  ExecuteReader();
+            while (r.Read())
+            {
+                res.Add(transform(r));
+            }
+
+            r.Close();
+            return res;
+        }
+
+        async Task<List<T>> IQuery<T>.GetAsync(Func<IDataReader, T> transform)
+        {
+            var res = new List<T>();
+            await using var r = await ExecuteReaderAsync(Token);
+            while (r.Read())
+            {
+                res.Add(transform(r));
+            }
+
+            r.Close();
+            return res;
+        }
+
+        async IAsyncEnumerable<T> IQuery<T>.GetAsyncEnumerable(Func<IDataReader, T> transform)
+        {
+            await using var r = await ExecuteReaderAsync(Token);
+            while (r.Read())
+            {
+                yield return transform(r);
+            }
+
+            await r.CloseAsync().ConfigureAwait(false);
+        }
+
+        IConditionQuery<T> ICommandBuilder<T>.Where(string fieldName, object value)
+        {
+            WhereInternal(fieldName, "=",value);
+            return this;
+        }
+
+        IConditionQuery<T> ICommandBuilder<T>.WhereNot(string column, object value)
+        {
+            WhereInternal(column,"!=",value);
+            return this;
+        }
+
+        IConditionQuery<T> ICommandBuilder<T>.Where(string clause)
+        {
+            CommandTextBuilder.AddWhere(clause);
+            return this;
+        }
         
-        IQuery<T> IQuery<T>.Set(string text)
+        IConditionBuilder<T> IConditionBuilder<T>.Or(string clause)
         {
-            ClauseBuilder.CommandText = text;
+            CommandTextBuilder.AddOr(clause);
             return this;
         }
 
-        IQueryBuilder<IQuery<T>, T> ICommand<IQuery<T>, T>.Where(string fieldName, object value)
-        {
-            WhereInternal(fieldName, value);
-            return this;
-        }
-
-        IQueryBuilder<IQuery<T>, T> ICommand<IQuery<T>, T>.Where(string clause)
-        {
-            ClauseBuilder.AddWhere(clause);
-            return this;
-        }
-
-        IQuery<T> ICommandCommon<IQuery<T>>.Order(string clause)
-        {
-            ClauseBuilder.OrderClause = clause;
-            return this;
-        }
-
-        IQuery<T> ICommandCommon<IQuery<T>>.Limit(int limit)
-        {
-            ClauseBuilder.Limit = limit;
-            return this;
-        }
-
-        IQuery<T> ICommandCommon<IQuery<T>>.Rollback(Action action)
-        {
-            Transaction.Rollback(action);
-            return this;
-        }
-
-        IQuery<T> ICommandCommon<IQuery<T>>.Param(string name, object value)
-        {
-            Param(name, value);
-            return this;
-        }
-
-        IQuery<T> ICommandCommon<IQuery<T>>.Param(IDbDataParameter parameter)
-        {
-            Param(parameter.ParameterName, parameter.Value);
-            return this;
-        }
-
-        IQuery<T> ICommandCommon<IQuery<T>>.Param(SimpleParameter parameter)
-        {
-            Param(parameter.Name, parameter.Value);
-            return this;
-        }
-
-        IQuery<T> ICommandCommon<IQuery<T>>.Parameters(IEnumerable<IDbDataParameter> paramArray)
-        {
-            Parameters(paramArray);
-            return this;
-        }
-
-        IQueryBuilder<Command<T>, T> IQueryBuilder<Command<T>, T>.Or(string clause)
-        {
-            ClauseBuilder.AddOr(clause);
-            return this;
-        }
-
-        IQueryBuilder<Command<T>, T> IQueryBuilder<Command<T>, T>.Or(string fieldName, object value)
+        IConditionBuilder<T> IConditionBuilder<T>.Or(string fieldName, object value)
         {
             OrInternal(fieldName, value);
             return this;
         }
+
+        ISelectBuilder<T> IInsertBuilder<T>.Select(params string[] columns)
+        {
+            CommandTextBuilder.AddSelect();
+            CommandTextBuilder.AddColumns(columns);
+            return this;
+        }
+
+        ISelectBuilder<T> ISelectBuilder<T>.Add(params string[] columns)
+        {
+            CommandTextBuilder.AddColumns(columns);
+            return this;
+        }
+
+        IQuery<T> ISelectBuilder<T>.From(string table)
+        {
+            CommandTextBuilder.AddFrom(table);
+            return this;
+        }
+
+        IInsertBuilder<T> IInsertBuilder<T>.Add(params string[] columns)
+        {
+            CommandTextBuilder.AddColumns(columns);
+            return this;
+        }
+
+        IValuesBuilder<T> IInsertBuilder<T>.Values()
+        {
+            return this;
+        }
+
+        IColumnsBuilder<T> IColumnsBuilder<T>.Add(params string[] columns)
+        {
+            CommandTextBuilder.AddColumns(columns);
+            return this;
+        }
+
+        ISelectBuilder<T> IColumnsBuilder<T>.Select()
+        {
+            CommandTextBuilder.AddSelect();
+            return this;
+        }
+
+        ISelectBuilder<T> IColumnsBuilder<T>.Select(params string[] columns)
+        {
+            CommandTextBuilder.AddSelect();
+            CommandTextBuilder.AddColumns(columns);
+            return this;
+        }
+
+        IValuesBuilder IColumnsBuilder<T>.Values()
+        {
+            return this;
+        }
+
+        IInsertQuery<T> IColumnsBuilder<T>.Values(params string[] values)
+        {
+            CommandTextBuilder.AddValues(values);
+            return this;
+        }
+        
+        ISelectBuilder<T> ICommand<T>.Select(params string[] columns)
+        {
+            CommandTextBuilder.AddSelect();
+            return this;
+        }
+
+        IInsertBuilder<T> ICommand<T>.Insert(string tableName)
+        {
+            CommandTextBuilder.AddInsert(tableName);
+            return this;
+        }
+
+        IUpdateBuilder<T> ICommand<T>.Update(string tableName)
+        {
+            CommandTextBuilder.AddUpdate(tableName);
+            return this;
+        }
+
+        IDropBuilder<T> ICommand<T>.Drop(string tableName)
+        {
+            CommandTextBuilder.AddDrop(tableName);
+            return this;
+        }
+
+        ICreateBuilder<T> ICommand<T>.Create(string tableName)
+        {
+            CommandTextBuilder.AddCreate(tableName);
+            return this;
+        }
+
+        IDeleteQuery<T> ICommand<T>.Delete(string tableName)
+        {
+            CommandTextBuilder.AddDelete(tableName);
+            return this;
+        }
+
+        ICreateQuery<T> ICreateBuilder<T>.Add(string column, SqlDbType type, int charCount)
+        {
+            CommandTextBuilder.AddColumnDefinition(column,type,charCount);
+            return this;
+        }
+
+        IDropQuery<T> IDropBuilder<T>.IfExists()
+        {
+            CommandTextBuilder.AddIfExists();
+            return this;
+        }
+
+        IRowBuilder<T> IRowBuilder<T>.Row()
+        {
+            CommandTextBuilder.AddRow();
+            return this;
+        }
+
+        IRowBuilder<T> IRowBuilder<T>.Add<TIn>(TIn value)
+        {
+            CommandTextBuilder.AddToRow(value);
+            return this;
+        }
+
+        IUpdateQuery<T> IUpdateBuilder<T>.Set<TParam>(string columnName, TParam value)
+        {
+            var name = GenerateParam(columnName, value);
+            CommandTextBuilder.AddUpdateValue(columnName,name);
+            return this;
+        }
+
+        IRowBuilder<T> IValuesBuilder<T>.Row()
+        {
+           CommandTextBuilder.AddRow();
+           return this;
+        }
     }
 
-    public class Command : DbCommand, ITokenHolder, IQueryBuilder<Command>
+    public class Command : 
+        DbCommand,
+        ICommand,
+        IColumnsBuilder,
+        ICommandBuilder,
+        IConditionBuilder,
+        ICreateBuilder,
+        ICreateQuery,
+        IDropBuilder,
+        IDropQuery,
+        IInsertBuilder,
+        IInsertQuery,
+        IQuery,
+        IRowBuilder,
+        ISelectBuilder,
+        ITokenHolder,
+        IUpdateBuilder,
+        IUpdateQuery,
+        IValuesBuilder,
+        IDeleteQuery,
+        IConditionQuery
     {
         public Command(string commandText, Transaction transaction, bool isolated = true)
         {
@@ -121,7 +280,6 @@ namespace DBInline.Classes
             Connection = transaction.Connection;
             DbCommand = transaction.Connection.CreateCommand();
             DbCommand.Transaction = transaction.DbTransaction;
-            ClauseBuilder.CommandText = commandText;
             Transaction = transaction;
             Transaction.OnCommandCreated(this);
         }
@@ -134,7 +292,7 @@ namespace DBInline.Classes
         public new DatabaseConnection Connection { get; }
         public new Transaction Transaction { get; }
 
-        internal readonly ClauseBuilder ClauseBuilder = new ClauseBuilder();
+        internal readonly CommandTextBuilder CommandTextBuilder = new CommandTextBuilder();
 
         protected override DbConnection DbConnection { get; set; }
         protected override DbParameterCollection DbParameterCollection => DbCommand.Parameters;
@@ -143,8 +301,8 @@ namespace DBInline.Classes
 
         public override string CommandText
         {
-            get => ClauseBuilder.CommandText;
-            set => ClauseBuilder.CommandText = value;
+            get => DbCommand.CommandText;
+            set => DbCommand.CommandText = value;
         }
 
         public override int CommandTimeout
@@ -170,19 +328,22 @@ namespace DBInline.Classes
             get => DbCommand.DesignTimeVisible;
             set => DbCommand.DesignTimeVisible = value;
         }
-        public ICommandCommon<IQueryCommon> Common => this;
         Command IWrapCommand.Command => this;
         public CancellationToken Token => Transaction.Token;
 
         public Task<int> RunAsync()
         {
-            ClauseBuilder.BuildClauses(this);
             return DbCommand.ExecuteNonQueryAsync(Token);
         }
-        
+
+        public IDropQuery IfExists()
+        {
+            CommandTextBuilder.AddIfExists();
+            return this;
+        }
+
         public DataSet DataSet()
         {
-            ClauseBuilder.BuildClauses(this);
             var dt = new DataSet();
             using var da = new DataAdapter(this);
             da.Fill(dt);
@@ -191,7 +352,6 @@ namespace DBInline.Classes
 
         public async Task<DataSet> DataSetAsync()
         {
-            ClauseBuilder.BuildClauses(this);
             var dt = new DataSet();
             await using var da = new DataAdapter(this);
             await da.FillAsync(dt, Token).ConfigureAwait(false);
@@ -200,31 +360,27 @@ namespace DBInline.Classes
 
         public DbDataReader Reader()
         {
-            ClauseBuilder.BuildClauses(this);
             return ExecuteReader();
         }
 
         public DataTable Table()
         {
-            ClauseBuilder.BuildClauses(this);
             var dt = new DataTable();
             using var da = new DataAdapter(this);
             da.Fill(dt);
             return dt;
         }
 
-        public async Task<DataTable> TableAsync()
+        async Task<DataTable> IQuery.TableAsync()
         {
-            ClauseBuilder.BuildClauses(this);
             var dt = new DataTable();
             await using var da = new DataAdapter(this);
             await da.FillAsync(dt, Token).ConfigureAwait(false);
             return dt;
         }
 
-        public Task<DbDataReader> ReaderAsync()
+        Task<DbDataReader> IQuery.ReaderAsync()
         {
-            ClauseBuilder.BuildClauses(this);
             return DbCommand.ExecuteReaderAsync(Token);
         }
         public override void Cancel()
@@ -232,32 +388,51 @@ namespace DBInline.Classes
             DbCommand.Cancel();
         }
 
-        public T Scalar<T>()
+        T IQuery.Scalar<T>()
         {
-            var res = (T) ExecuteScalar();
-            return res;
+            var res = ExecuteScalar();
+            if (res == null || res == DBNull.Value) return default;
+            return (T) res;
         }
 
-        public async Task<T> ScalarAsync<T>()
+        async Task<T> IQuery.ScalarAsync<T>()
         {
-            var res = (T) await ExecuteScalarAsync(Token);
-            return res;
+            var res = await ExecuteScalarAsync(Token);
+            if (res == null || res == DBNull.Value) return default;
+            return (T) res;
         }
 
-        public object Scalar()
+        private object Scalar()
         {
             return ExecuteScalar();
         }
 
-        public async Task<object> ScalarAsync()
+        private async Task<object> ScalarAsync()
         {
             var res = await ExecuteScalarAsync(Token);
             return res;
         }
 
-        public IEnumerable<TOut> Select<TOut>(Func<IDataReader, TOut> transform)
+        public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
         {
-            ClauseBuilder.BuildClauses(this);
+            CommandTextBuilder.SetCommandText(this);
+            return base.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
+        {
+            CommandTextBuilder.SetCommandText(this);
+            return base.ExecuteScalarAsync(cancellationToken);
+        }
+
+        protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+        {
+            CommandTextBuilder.SetCommandText(this);
+            return base.ExecuteDbDataReaderAsync(behavior, cancellationToken);
+        }
+
+        IEnumerable<TOut> IQuery.Get<TOut>(Func<IDataReader, TOut> transform)
+        {
             using var r = ExecuteReader();
             while (r.Read())
             {
@@ -266,7 +441,8 @@ namespace DBInline.Classes
             r.Close();
         }
 
-        public async Task<List<TOut>> SelectAsync<TOut>(Func<IDataReader, TOut> transform)
+        
+        async Task<List<TOut>> IQuery.GetAsync<TOut>(Func<IDataReader, TOut> transform)
         {
             var res = new List<TOut>();
             await using var r = await ExecuteReaderAsync(Token);
@@ -278,9 +454,8 @@ namespace DBInline.Classes
             return res;
         }
 
-        public async IAsyncEnumerable<TOut> SelectAsyncEnumerable<TOut>(Func<IDataReader, TOut> transform)
+        async IAsyncEnumerable<TOut> IQuery.GetAsyncEnumerable<TOut>(Func<IDataReader, TOut> transform)
         {
-            ClauseBuilder.BuildClauses(this);
             await using var r = await ExecuteReaderAsync(Token);
             while (r.Read())
             {
@@ -289,7 +464,7 @@ namespace DBInline.Classes
             await r.CloseAsync().ConfigureAwait(false);
         }
 
-        private Parameter CreateParameter(string name, object value)
+        private Parameter CreateParameter<T>(string name, T value)
         {
             var param = Connection.DbType switch
             {
@@ -299,7 +474,7 @@ namespace DBInline.Classes
                 Database.SqlLite => new Parameter(this, new SqliteParameter(name, value)),
                 _ => new Parameter(DbCommand.CreateParameter())
             };
-            base.Parameters.Add(param.DbParameter);
+            Parameters.Add(param.DbParameter);
             return param;
         }
 
@@ -309,7 +484,42 @@ namespace DBInline.Classes
             return res;
         }
 
-        public object RunScalar()
+        ISelectBuilder IInsertBuilder.Select(params string[] columns)
+        {
+            CommandTextBuilder.AddSelectFrom(columns ?? new string[]{});
+            return this;
+        }
+
+        ISelectBuilder ISelectBuilder.Add(params string[] columnNames)
+        {
+            CommandTextBuilder.AddColumns(columnNames ?? new string[]{});
+            return this;
+        }
+
+        public ISelectBuilder Select()
+        {
+            CommandTextBuilder.AddSelect();
+            return this;
+        }
+
+        IQuery ISelectBuilder.From(string tableName)
+        {
+            CommandTextBuilder.AddFrom(tableName);
+           return this;
+        }
+        
+        IInsertBuilder IInsertBuilder.Add(params string[] columnNames)
+        {
+            CommandTextBuilder.AddColumns(columnNames);
+            return this;
+        }
+
+        IValuesBuilder IInsertBuilder.Values()
+        {
+            return this;
+        }
+
+        private object RunScalar()
         {
             var res = ExecuteScalar();
             return res;
@@ -317,24 +527,19 @@ namespace DBInline.Classes
 
         public override int ExecuteNonQuery()
         {
-            ClauseBuilder.BuildClauses(this);
+            CommandTextBuilder.SetCommandText(this);
             return DbCommand.ExecuteNonQuery();
         }
 
         public override object ExecuteScalar()
         {
-            ClauseBuilder.BuildClauses(this);
+            CommandTextBuilder.SetCommandText(this);
             return DbCommand.ExecuteScalar();
         }
-
-        public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
-        {
-            ClauseBuilder.BuildClauses(this);
-            return base.ExecuteScalarAsync(cancellationToken);
-        }
-
+        
         public override void Prepare()
         {
+            CommandTextBuilder.SetCommandText(this);
             DbCommand.Prepare();
         }
 
@@ -351,114 +556,69 @@ namespace DBInline.Classes
 
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
         {
-            ClauseBuilder.BuildClauses(this);
+            CommandTextBuilder.SetCommandText(this);
             return DbCommand.ExecuteReader();
         }
-
-        IQuery IQuery.Set(string text)
-        {
-            ClauseBuilder.CommandText = text;
-            return this;
-        }
-
-        IQuery ICommandCommon<IQuery>.Rollback(Action action)
-        {
-            Transaction.Rollback(action);
-            return this;
-        }
-
-        IQuery ICommandCommon<IQuery>.Param(string name, object value)
-        {
-            CreateParameter(name, value);
-            return this;
-        }
-
-        public IQuery Param(IDbDataParameter parameter)
+        
+        IQuery ICommandBuilder.Param(IDbDataParameter parameter)
         {
             CreateParameter(parameter.ParameterName, parameter.Value);
             return this;
         }
 
-        public IQuery Param(SimpleParameter parameter)
+        IQuery ICommandBuilder.Param(SimpleParameter parameter)
         {
             CreateParameter(parameter.Name, parameter.Value);
             return this;
         }
-
-        IQuery ICommandCommon<IQuery>.Parameters(IEnumerable<IDbDataParameter> paramArray)
+        
+        IQuery ICommandBuilder.Order(string clause)
         {
-            foreach (var dbDataParameter in paramArray)
-            {
-                CreateParameter(dbDataParameter.ParameterName, dbDataParameter.Value);
-            }
-
+            CommandTextBuilder.AddOr(clause);
             return this;
         }
 
-        public IQuery Order(string clause)
+        IQuery ICommandBuilder.Limit(int limit)
         {
-            ClauseBuilder.AddOr(clause);
-            return this;
-        }
-
-        public IQuery Limit(int limit)
-        {
-            ClauseBuilder.Limit = limit;
+            CommandTextBuilder.Limit = limit;
             return this;
         }
         
-        IQueryBuilder<IQuery> ICommand<IQuery>.Where(string clause)
+        IConditionQuery ICommandBuilder.Where(string clause)
         {
-            return Where(clause);
+             Where(clause);
+             return this;
         }
 
-        IQueryBuilder<IQuery> ICommand<IQuery>.Where(string fieldName, object value)
+        IConditionQuery ICommandBuilder.Where(string columnName, object value)
         {
-            WhereInternal(fieldName, value);
+            WhereInternal(columnName, "=",value);
             return this;
         }
 
-        private string GenerateParam(string fieldName, object value)
+        IConditionQuery ICommandBuilder.WhereNot(string columnName, object value)
+        {
+            WhereInternal(columnName, "!=",value);
+            return this;
+        }
+
+        protected string GenerateParam<T>(string columnName, T value)
         {
             Interlocked.Increment(ref _generatedParamId);
-            var name = $"@{fieldName}_{_generatedParamId}";
+            var name = $"@{columnName}_{_generatedParamId}";
             Param((name, value));
             return name;
         }
         
-        protected void WhereInternal(string fieldName, object value)
+        protected void WhereInternal<T>(string columnName, string op,T value )
         {
-            var name = GenerateParam(fieldName, value);
-            Where($"{fieldName}={name}");
+            var name = GenerateParam(columnName, value);
+            Where($"{columnName}{op}{name}");
         }
         
-        private IQueryBuilder<Command> Where(string whereString)
+        private IConditionBuilder Where(string whereString)
         {
-            ClauseBuilder.AddWhere(whereString);
-            return this;
-        }
-        
-        IQuery ICommandCommon<IQuery>.Limit(int limit)
-        {
-            ClauseBuilder.Limit = limit;
-            return this;
-        }
-
-        IQuery ICommandCommon<IQuery>.Order(string clause)
-        {
-            ClauseBuilder.OrderClause = clause;
-            return this;
-        }
-        
-        IQuery ICommandCommon<IQuery>.Param(IDbDataParameter parameter)
-        {
-            CreateParameter(parameter.ParameterName, parameter.Value);
-            return this;
-        }
-
-        IQuery ICommandCommon<IQuery>.Param(SimpleParameter parameter)
-        {
-            CreateParameter(parameter.Name, parameter.Value);
+            CommandTextBuilder.AddWhere(whereString);
             return this;
         }
 
@@ -468,9 +628,13 @@ namespace DBInline.Classes
             return this;
         }
 
-        IAddParameter IAddParameter.Parameters(IEnumerable<IDbDataParameter> paramArray)
+        public IAddParameter Params(IEnumerable<IDbDataParameter> paramArray)
         {
-            return Parameters(paramArray);
+            foreach (var dbDataParameter in paramArray)
+            {
+                CreateParameter(dbDataParameter.ParameterName, dbDataParameter.Value);
+            }
+            return this;
         }
 
         IAddRollBack IAddRollBack.Rollback(Action action)
@@ -479,37 +643,35 @@ namespace DBInline.Classes
             return this;
         }
         
-        public IQuery Param(string name, object value)
+        internal IDbDataParameter Param(string name, object value)
         {
-            CreateParameter(name, value);
-            return this;
+           return CreateParameter(name, value);
         }
-
-        public IQuery Parameters(IEnumerable<IDbDataParameter> paramArray)
-        {
-            foreach (var dbDataParameter in paramArray)
-            {
-                CreateParameter(dbDataParameter.ParameterName, dbDataParameter.Value);
-            }
-
-            return this;
-        }
-
-        // ReSharper disable once UnusedMethodReturnValue.Local
-        private IDbDataParameter Param((string name, object value) valueTuple)
+        internal IDbDataParameter Param<T>((string name, T value) valueTuple)
         {
             var (name, value) = valueTuple;
             return CreateParameter(name, value);
         }
         
-
-        IQueryBuilder<Command> IQueryBuilder<Command>.Or(string clause)
+        IConditionBuilder IConditionBuilder.Or(string clause)
         {
-            ClauseBuilder.AddOr(clause);
+            CommandTextBuilder.AddOr(clause);
             return this;
         }
 
-        IQueryBuilder<Command> IQueryBuilder<Command>.Or(string fieldName, object value)
+        public IConditionQuery Or(string fieldName, object value)
+        {
+            OrInternal(fieldName, value);
+            return this;
+        }
+
+        public IConditionQuery Or(string clause)
+        {
+            CommandTextBuilder.AddOr(clause);
+            return this;
+        }
+
+        IConditionBuilder IConditionBuilder.Or(string fieldName, object value)
         {
             OrInternal(fieldName, value);
             return this;
@@ -518,7 +680,102 @@ namespace DBInline.Classes
         protected void OrInternal(string fieldName, object value)
         {
             var name = GenerateParam(fieldName, value);
-            ClauseBuilder.AddOr($"{fieldName}={name}");
+            CommandTextBuilder.AddOr($"{fieldName}={name}");
+        }
+
+        
+
+        IColumnsBuilder IColumnsBuilder.Add(params string[] columnName)
+        {
+            CommandTextBuilder.AddColumns(columnName);
+            return this;
+        }
+        
+        ISelectBuilder IColumnsBuilder.Select(params string[] columns)
+        {
+            CommandTextBuilder.AddSelect();
+            CommandTextBuilder.AddColumns(columns ??  new string []{});
+            return this;
+        }
+
+        public IValuesBuilder Values()
+        {
+            return this;
+        }
+
+        IInsertQuery IColumnsBuilder.Values(params string[] values)
+        {
+            CommandTextBuilder.AddSelect();
+            CommandTextBuilder.AddValues(values ??  new string []{});
+            return this;
+        }
+
+        ISelectBuilder ICommand.Select(params string[] columns)
+        {
+            CommandTextBuilder.AddSelect();
+            CommandTextBuilder.AddColumns(columns ??  new string []{});
+            return this;
+        }
+
+        IInsertBuilder ICommand.Insert(string tableName)
+        {
+            CommandTextBuilder.AddInsert(tableName);
+            return this;
+        }
+
+        IUpdateBuilder ICommand.Update(string tableName)
+        {
+            CommandTextBuilder.AddUpdate(tableName);
+            return this;
+        }
+
+        IDropBuilder ICommand.Drop(string tableName)
+        {
+            CommandTextBuilder.AddDrop(tableName);
+            return this;
+        }
+
+        ICreateBuilder ICommand.Create(string tableName)
+        {
+            CommandTextBuilder.AddCreate(tableName);
+            return this;
+        }
+
+        IDeleteQuery ICommand.Delete(string tableName)
+        {
+            CommandTextBuilder.AddDelete(tableName);
+            return this;
+        }
+
+        IRowBuilder IValuesBuilder.AddRow()
+        {
+            CommandTextBuilder.AddRow();
+            return this;
+        }
+
+        IInsertQuery IRowBuilder.AddValue<TIn>(TIn value)
+        {
+            CommandTextBuilder.AddToRow(value);
+            return this;
+        }
+
+        ICreateQuery ICreateBuilder.Add(string column, SqlDbType type, int charCount)
+        {
+            CommandTextBuilder.AddColumnDefinition(column,type,charCount);
+            return this;
+        }
+        
+        IRowBuilder IRowBuilder.AddRow()
+        {
+            CommandTextBuilder.AddRow();
+            return this;
+        }
+
+        IUpdateQuery IUpdateBuilder.Set<TParam>(string columnName, TParam value)
+        {
+            var name = GenerateParam(columnName,value);
+            CommandTextBuilder.AddUpdateValue(columnName,name);
+            return this;
         }
     }
 }
