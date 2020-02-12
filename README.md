@@ -1,4 +1,4 @@
-# DBInline 1.0.0
+# DBInline 1.0.0-pre-release ![.NET Core develop](https://github.com/NicoZweifel/DBInline/workflows/.NET%20Core%20develop/badge.svg)
 
 - WIP
 - Currently all Tests pass.
@@ -10,7 +10,8 @@
   commands and also pool different Databases together in the code.
   
 - Contains various wrappers/static methods/overloads for different Database use-cases.
-  Wrappers for Insert/Select/Update/Delete and Subqueries are currently in the works and will follow soon.
+ 
+- Seperate simpler interfaces for Insert/Select/Update/Delete and Subqueries are currently in the works (feature/CommandBuilders) and will follow soon.
   
 - Rollbacks/Disposing is handled in the background.
 
@@ -138,7 +139,7 @@ for (var counter = 1; counter< 10;counter++)
 {
     p.Query()
         .Set('Update/delete query')
-        .Where("DBID", counter")
+        .Where("DBID", counter)
         .AddRollback(() =>
         {
             Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
@@ -188,7 +189,7 @@ return await PoolAsync(async p =>
                            .Set(SelectQuery)
                            .Where("name", "John Doe")
                            .Or("name", "James Smith")
-                           .SelectAsync(x => (string) x[1]) //Selecting Task<List<T>
+                           .SelectAsync(x => (string) x[1]) //Selecting Task<List<T>>
                            .ConfigureAwait(false));
        
                        var peter = await p.Query<int>()
