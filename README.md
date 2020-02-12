@@ -5,7 +5,7 @@
 
 - WIP
 - Currently all Tests pass.
-- Before using this in production, more testing should be done.
+- Before using this in production, more extensive tests should be written, since there might still be bugs/unintended behaviour.
 
 # Summary
 
