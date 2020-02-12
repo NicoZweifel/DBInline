@@ -111,7 +111,7 @@ using var p = Pool();
 
 //SELECT
 
-var customers = !p.Query()
+var customers = p.Query()
     .Select()
     .From("Customers")
     .limit(5)
@@ -120,7 +120,7 @@ var customers = !p.Query()
 
 //UPDATE
 
-var i = p.Query()
+p.Query()
     .Update("Customers")
     .Where("DBID", 10)
     .AddRollback(() =>
@@ -144,7 +144,7 @@ p.Query()
 
 //INSERT INTO ... VALUES
 
-var insertCount1 = p.Query() 
+p.Query() 
     .Insert(Customers) //InsertBuilder
     .Add("id")
     .Add("name")
@@ -164,20 +164,20 @@ var insertCount1 = p.Query()
 
 //INSERT INTO ... SELECT
 
-insertCount2 = p.Query()
-            .Insert(Employees)
-            .Add("id")
-            .Add("name")
-            .Select()
-            .Add("id")
-            .Add("name")
-            .From(Customers)
-            .Run();
+p.Query()
+    .Insert(Employees)
+    .Add("id")
+    .Add("name")
+    .Select()
+    .Add("id")
+    .Add("name")
+    .From(Customers)
+    .Run();
 
 //Query another Database, in this example a table containing Jsons.
 //Additional databases have to be registered by name in the ContextController class.
 
-var res2 = p.Query<long>(Database2)
+var json = p.Query<long>(Database2)
     .Select()
     .From("Documents")
     .Where("customerID",5)
@@ -190,13 +190,13 @@ p.Commit();  //With the using statement in place, if this is not called everythi
 ```cs
 return Pool(p =>
     {
-        var res1 = p.Query<DataTable>()
+        var table = p.Query<DataTable>()
             .Select()
             .From("Customers")
             .Where("DBID", 10)
             .Or("DBID",11)
             .Table(); //Select as Datatable
-        return res1.ToJson() //Extension to immediately create Json out of a Datatable;
+        return table;
     });
 }          
 ```
