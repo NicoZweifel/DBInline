@@ -13,8 +13,6 @@
   commands and also pool different Databases together in the code.
   
 - Contains various wrappers/static methods/overloads for different Database use-cases.
-
-- Insert Into From Wrapper is not yet tested.
    
 - Rollbacks/Disposing is handled in the background.
 
