@@ -20,12 +20,12 @@ namespace DBInline.Test
                 using var p = Pool();
                 
                 p.Query()
-                    .Delete(TableName)
+                    .Delete(Customers)
                     .Run();
 
                 var l = p.Query()
                     .Select("name")
-                    .From(TableName)
+                    .From(Customers)
                     .Get(x =>(string) x[0])
                     .ToList();
 
@@ -46,7 +46,7 @@ namespace DBInline.Test
                     return t.Query()
                         .Select()
                         .Add("name")
-                        .From(TableName)
+                        .From(Customers)
                         .Get(x =>(string) x[0])
                         .ToList();
                 });
@@ -65,13 +65,13 @@ namespace DBInline.Test
                 Pool(async p =>
                 {
                     await p.Query()
-                        .Delete(TableName)
+                        .Delete(Customers)
                         .RunAsync()
                         .ConfigureAwait(false);
 
                     var l = p.Query()
                         .Select("id")
-                        .From(TableName)
+                        .From(Customers)
                         .Get(x =>(int) x[0])
                         .ToList();
 
@@ -94,7 +94,7 @@ namespace DBInline.Test
                         .Select()
                         .Add("id")
                         .Add("name")
-                        .From(TableName)
+                        .From(Customers)
                         .Get(x => ((int)x[0] ,(string)x[1]))
                         .ToList();
                 });
@@ -111,12 +111,12 @@ namespace DBInline.Test
                 await PoolAsync(p =>
                 {
                     p.Query()
-                        .Delete(TableName)
+                        .Delete(Customers)
                         .Run();
                     
                     var selCount = p.Query()
                         .Select()
-                        .From(TableName)
+                        .From(Customers)
                         .Get(x =>(int) x[0])
                         .ToList()
                         .Count;
@@ -135,7 +135,7 @@ namespace DBInline.Test
                 {
                     return t.Query()
                         .Select()
-                        .From(TableName)
+                        .From(Customers)
                         .Get(x =>(int) x[0])
                         .ToList();
                 });
@@ -153,13 +153,13 @@ namespace DBInline.Test
                 await PoolAsync(async p =>
                 {
                     await p.Query()
-                            .Delete(TableName)
+                            .Delete(Customers)
                             .RunAsync()
                         .ConfigureAwait(false);
 
                     var count = (await p.Query()
                             .Select()
-                            .From(TableName)
+                            .From(Customers)
                             .GetAsync(x => x)
                             .ConfigureAwait(false))
                         .Count;
@@ -178,7 +178,7 @@ namespace DBInline.Test
                 {
                     return t.Query()
                         .Select()
-                        .From(TableName)
+                        .From(Customers)
                         .Get(x => (int) x[0])
                         .ToList();
                 }).ConfigureAwait(false);
@@ -196,7 +196,7 @@ namespace DBInline.Test
                 Transaction(t =>
                 {
                     t.Query()
-                        .Delete(TableName)
+                        .Delete(Customers)
                         .Run();
                     
                     throw new TestException();
@@ -211,7 +211,7 @@ namespace DBInline.Test
                 {
                     return t.Query()
                         .Select()
-                        .From(TableName)
+                        .From(Customers)
                         .Get(x =>(int) x[0])
                         .ToList();
                 });
@@ -229,7 +229,7 @@ namespace DBInline.Test
                 await TransactionAsync(t =>
                 {
                     t.Query()
-                        .Delete(TableName)
+                        .Delete(Customers)
                         .Where("id < 10")
                         .Run();
                     
@@ -245,7 +245,7 @@ namespace DBInline.Test
                 {
                     return t.Query()
                         .Select()
-                        .From(TableName)
+                        .From(Customers)
                         .Get(x =>(int) x[0])
                         .ToList();
                 }).ConfigureAwait(false);

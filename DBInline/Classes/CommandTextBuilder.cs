@@ -79,29 +79,37 @@ namespace DBInline.Classes
             _orderClause = "";
             _limit = 0;
         }
-        
+
         public void AddColumns(IEnumerable<string> columnNames)
         {
-            _columns.AddRange(columnNames ?? new string[] { });
+            if (_currentCommand == QueryType.InsertFrom)
+            {
+                _values.AddRange(columnNames ?? new string[] { });
+            }
+            else
+            {
+                _columns.AddRange(columnNames ?? new string[] { });
+            }
         }
 
-        private void CheckCurrentCommand(string tableName)
+        private void CheckCurrentCommand(string tableName,QueryType newCommand )
         {
             if (_currentCommand == 0)
             {
                 _currentTable = tableName;
+                _currentCommand = newCommand;
                 return;
             }
             BuildCommandText();
             BuildClauses();
-            _commandText += $";{Environment.NewLine}";
+            if(newCommand != QueryType.InsertFrom) _commandText += $";{Environment.NewLine}";
+            _currentCommand = newCommand;
             _currentTable = tableName;
         }
 
         public void AddSelect()
         {
-            CheckCurrentCommand("");
-            _currentCommand = QueryType.Select;
+            CheckCurrentCommand("",QueryType.Select);
         }
 
         public void AddValues(IEnumerable<string> values)
@@ -116,37 +124,39 @@ namespace DBInline.Classes
 
         public void AddFrom(string tableName)
         {
-            _currentTable = tableName;
+            if (_currentCommand == QueryType.InsertFrom)
+            {
+                _fromTable = tableName;
+            }
+            else
+            {
+                 _currentTable = tableName;  
+            }
         }
 
         public void AddInsert(string tableName)
         {
-            CheckCurrentCommand(tableName);
-            _currentCommand = QueryType.Insert;
+            CheckCurrentCommand(tableName,QueryType.Insert);
         }
 
         public void AddUpdate(string tableName)
         {
-            CheckCurrentCommand(tableName);
-            _currentCommand = QueryType.Update;
+            CheckCurrentCommand(tableName, QueryType.Update);
         }
 
         public void AddDrop(string tableName)
         {
-            CheckCurrentCommand(tableName);
-            _currentCommand = QueryType.Drop;
+            CheckCurrentCommand(tableName,QueryType.Drop);
         }
 
         public void AddDelete(string tableName)
         {
-            CheckCurrentCommand(tableName);
-            _currentCommand = QueryType.Delete;
+            CheckCurrentCommand(tableName,QueryType.Delete);
         }
         
         public void AddCreate(string tableName)
         {
-            CheckCurrentCommand(tableName);
-            _currentCommand = QueryType.Create;
+            CheckCurrentCommand(tableName,QueryType.Create);
         }
         
         public void AddToRow<TIn>(TIn value)
@@ -183,6 +193,12 @@ namespace DBInline.Classes
             _addIfExists = true;
         }
         
+        public void AddSelectFrom(IEnumerable<string> columns)
+        {
+            _currentCommand = QueryType.InsertFrom;
+            _values.AddRange(columns);
+        }
+        
         private void BuildCommandText()
         {
             switch (_currentCommand)
@@ -211,7 +227,7 @@ namespace DBInline.Classes
                     _commandText += $" CREATE TABLE \"{_currentTable}\" ({string.Join(",", _values)}) ";
                     break;
                 case QueryType.InsertFrom:
-                    _commandText += $" INSERT INTO \"{_currentTable}\" ({string.Join(",", _columns)}) VALUES (SELECT  {string.Join(",", _values)} FROM \"{_fromTable}\") ";
+                    _commandText += $" INSERT INTO \"{_currentTable}\" ({string.Join(",", _columns)}) SELECT  {string.Join(",", _values)} FROM \"{_fromTable}\" ";
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

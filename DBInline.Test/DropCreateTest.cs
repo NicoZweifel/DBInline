@@ -17,21 +17,32 @@ namespace DBInline.Test
             using var p = Pool();
 
             p.Query()
-                .Drop(TableName)
+                .Drop(Customers)
                 .IfExists()
                 .Run();
 
             p.Query()
-                .Create(TableName)
+                .Create(Customers)
                 .Add("id", SqlDbType.Int)
                 .Add("name", SqlDbType.VarChar, 50)
                 .Run();
 
+            p.Query()
+                .Drop(Employees)
+                .IfExists()
+                .Run();
+
+            p.Query()
+                .Create(Employees)
+                .Add("id", SqlDbType.Int)
+                .Add("name", SqlDbType.VarChar, 50)
+                .Run();
+            
             p.Commit(); //Test
 
             var selCount = p.Query()
                 .Select("*")
-                .From(TableName)
+                .From(Customers)
                 .Get(x => (int) x[0])
                 .ToList()
                 .Count;
@@ -39,26 +50,34 @@ namespace DBInline.Test
             Assert.IsTrue(selCount == 0, "Table should be empty.");
 
             var insCount = p.Query()
-                .Insert(TableName)
+                .Insert(Customers)
                 .Add("id")
                 .Add("name")
                 .Values()
-                .Row().Add(1).Add("John Doe")
-                .Row().Add(2).Add("James Smith")
-                .Row().Add(3).Add("Jack Williams")
-                .Row().Add(4).Add("Peter Brown")
-                .Row().Add(5).Add("Hans Mueller")
+                .AddRow()
+                .AddValue(1).AddValue("John Doe")
+                .AddRow()
+                .AddValue(2).AddValue("James Smith")
+                .AddRow()
+                .AddValue(3).AddValue("Jack Williams")
+                .AddRow()
+                .AddValue(4).AddValue("Peter Brown")
+                .AddRow()
+                .AddValue(5).AddValue("Hans Mueller")
                 .Run();
 
             Assert.IsTrue(insCount == 5, "Table should be filled.");
 
             selCount = p.Query()
-                .Select("*")
-                .From(TableName)
-                .Get(x => x)
-                .ToList()
-                .Count;
-
+                .Insert(Employees)
+                .Add("id")
+                .Add("name")
+                .Select()
+                .Add("id")
+                .Add("name")
+                .From(Customers)
+                .Run();
+            
             p.Commit();
 
             Assert.IsTrue(selCount == 5, "Table should be filled.");
@@ -72,12 +91,12 @@ namespace DBInline.Test
             {
 
                 p.Query()
-                    .Drop(TableName)
+                    .Drop(Customers)
                     .IfExists()
                     .Run();
 
                 p.Query()
-                    .Create(TableName)
+                    .Create(Customers)
                     .Add("id", SqlDbType.Int)
                     .Add("name", SqlDbType.VarChar, 50)
                     .Run();
@@ -86,7 +105,7 @@ namespace DBInline.Test
 
                 var selCount = p.Query()
                     .Select("*")
-                    .From(TableName)
+                    .From(Customers)
                     .Get(x => (int) x[0])
                     .ToList()
                     .Count;
@@ -94,15 +113,15 @@ namespace DBInline.Test
                 Assert.IsTrue(selCount == 0, "Table should be empty.");
 
                 var insCount = p.Query()
-                    .Insert(TableName)
+                    .Insert(Customers)
                     .Add("id")
                     .Add("name")
                     .Values()
-                    .Row().Add(1).Add("John Doe")
-                    .Row().Add(2).Add("James Smith")
-                    .Row().Add(3).Add("Jack Williams")
-                    .Row().Add(4).Add("Peter Brown")
-                    .Row().Add(5).Add("Hans Mueller")
+                    .AddRow().AddValue(1).AddValue("John Doe")
+                    .AddRow().AddValue(2).AddValue("James Smith")
+                    .AddRow().AddValue(3).AddValue("Jack Williams")
+                    .AddRow().AddValue(4).AddValue("Peter Brown")
+                    .AddRow().AddValue(5).AddValue("Hans Mueller")
                     .Run();
 
                 Assert.IsTrue(insCount == 5, "Table should be filled.");
@@ -111,7 +130,7 @@ namespace DBInline.Test
 
                 selCount = p.Query()
                     .Select("*")
-                    .From(TableName)
+                    .From(Customers)
                     .Get(x => x)
                     .ToList()
                     .Count;

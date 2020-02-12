@@ -34,34 +34,9 @@ namespace DBInline.Test
         }
 
 
-        protected const string TableName = "dbinline_generated_table";
+        protected const string Customers = "dbinline_generated_table";
         
-        /// <summary>
-        /// Creates Table for tests.
-        /// </summary>
-        protected const string CreateQuery = "CREATE TABLE \"dbinline_generated_table\" (dbid int,name varchar(50));";
-
-        /// <summary>
-        /// Inserts some sample data.
-        /// </summary>
-        protected const string InsertQuery =
-            "INSERT INTO dbinline_generated_table (dbid,name) VALUES (1,'John Doe'),(2,'James Smith'),(3,'Jack Williams'),(4,'Peter Brown'),(5,'Hans Mueller');";
-
-        /// <summary>
-        /// Select Query
-        /// </summary>
-        protected const string SelectQuery = "SELECT * FROM \"dbinline_generated_table\";";
-        
-                
-        /// <summary>
-        /// Deletes content in Table.
-        /// </summary>
-        protected const string DeleteQuery = "DELETE FROM \"dbinline_generated_table\";";
-        
-        /// <summary>
-        /// Drops test Table.
-        /// </summary>
-        protected const string DropQuery = "DROP TABLE IF EXISTS \"dbinline_generated_table\";";
+        protected const string Employees = "dbinline_generated_table2";
         
     }
 }

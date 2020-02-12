@@ -14,49 +14,48 @@ namespace DBInline.Test
         public void PoolTest()
         {
             using var p = Pool();
-//doesnt work yet
+
             var test = p.Query<int>()
                 .Select()
                 .Add("id")
                 .Add("name")
-                .From(TableName)
+                .From(Customers)
                 .Where("id",2)
                 .Scalar();
-//doesnt work yet
+
             var test2 = p.Query<string>()
-                .Update(TableName)
+                .Update(Customers)
                 .Set("name", "John Doe2")
                 .Set("id",6)
                 .Where("id", 1)
                 .Select()
                 .Add("name")
-                .From(TableName)
+                .From(Customers)
                 .Where("id",6)
                 .Scalar();
 
             var test3 = p.Query<int>()
-                .Update(TableName)
+                .Update(Customers)
                 .Set("name", "John Doe")
                 .Set("id", 1)
                 .Where("id", 6)
                 .Scalar();
             
             
-//the rest works
             var list = p.Query()
-                .Select("*")
-                .From(TableName)
-                .Get(x => (string) x[1])
+                .Select("name")
+                .From(Customers)
+                .Get(x => (string) x[0])
                 .ToList();
 
             Assert.IsTrue(list.Count == 5, "Count should be 5.");
 
             var johnJames = p.Query()
-                .Select("*")
-                .From(TableName)
+                .Select("name")
+                .From(Customers)
                 .Where("name", "John Doe")
                 .Or("name", "James Smith")
-                .Get(x => (string) x[1])
+                .Get(x => (string) x[0])
                 .ToList();
 
             Assert.IsTrue(johnJames.Count == 2, "Count should be 2.");
@@ -64,8 +63,8 @@ namespace DBInline.Test
             Assert.IsTrue(johnJames.Contains("John Doe"), "Name missing.");
 
             var peter = p.Query<int>()
-                .Select("*")
-                .From(TableName)
+                .Select()
+                .From(Customers)
                 .Where("name", "Peter Brown")
                 .Scalar();
 
@@ -83,8 +82,8 @@ namespace DBInline.Test
                 var list = new List<string>();
 
                 await foreach (var x in p.Query()
-                    .Select("*")
-                    .From(TableName)
+                    .Select()
+                    .From(Customers)
                     .GetAsyncEnumerable(x => (string) x[1])
                     .ConfigureAwait(false))
                 {
@@ -95,8 +94,8 @@ namespace DBInline.Test
 
 
                 var johnJames = (await p.Query()
-                    .Select("*")
-                    .From(TableName)
+                    .Select()
+                    .From(Customers)
                     .Where("name", "John Doe")
                     .Or("name", "James Smith")
                     .GetAsync(x => (string) x[1])
@@ -108,7 +107,7 @@ namespace DBInline.Test
 
                 var peter = await p.Query<int>()
                     .Select("id")
-                    .From(TableName)
+                    .From(Customers)
                     .Where("name","Peter Brown")
                     .ScalarAsync()
                     .ConfigureAwait(false);

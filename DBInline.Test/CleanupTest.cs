@@ -12,9 +12,15 @@ namespace DBInline.Test
         {
             using var p = Pool();
             p.Query()
-                .Drop(TableName)
+                .Drop(Customers)
                 .IfExists()
                 .Run();
+            
+            p.Query()
+                .Drop(Employees)
+                .IfExists()
+                .Run();
+            
             p.Commit();
             Assert.Pass();
         }

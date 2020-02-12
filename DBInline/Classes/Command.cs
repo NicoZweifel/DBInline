@@ -22,8 +22,6 @@ namespace DBInline.Classes
         IDropBuilder<T>,
         IDropQuery<T>,
         IInsertBuilder<T>,
-        IInsertFromBuilder<T>,
-        IInsertFromQuery<T>,
         IInsertQuery<T>,
         IQuery<T>,
         IRowBuilder<T>,
@@ -120,11 +118,13 @@ namespace DBInline.Classes
             return this;
         }
 
-        IQuery<T> IInsertBuilder<T>.From(string table)
+        ISelectBuilder<T> IInsertBuilder<T>.Select(params string[] columns)
         {
-            CommandTextBuilder.AddFrom(table);
+            CommandTextBuilder.AddSelect();
+            CommandTextBuilder.AddColumns(columns);
             return this;
         }
+
         ISelectBuilder<T> ISelectBuilder<T>.Add(params string[] columns)
         {
             CommandTextBuilder.AddColumns(columns);
@@ -226,18 +226,6 @@ namespace DBInline.Classes
             return this;
         }
 
-        IInsertFromQuery<T> IInsertFromBuilder<T>.Select(params string[] columns)
-        {
-            CommandTextBuilder.AddInsertFromColumns(columns ?? new string[]{});
-            return this;
-        }
-
-        ICommandBuilder<T> IInsertFromQuery<T>.From(string table)
-        {
-            CommandTextBuilder.AddFrom(table);
-            return this;
-        }
-
         IRowBuilder<T> IRowBuilder<T>.Row()
         {
             CommandTextBuilder.AddRow();
@@ -275,8 +263,6 @@ namespace DBInline.Classes
         IDropBuilder,
         IDropQuery,
         IInsertBuilder,
-        IInsertFromBuilder,
-        IInsertFromQuery,
         IInsertQuery,
         IQuery,
         IRowBuilder,
@@ -498,15 +484,15 @@ namespace DBInline.Classes
             return res;
         }
 
-        ICommandBuilder IInsertFromQuery.From(string tableName)
+        ISelectBuilder IInsertBuilder.Select(params string[] columns)
         {
-            CommandTextBuilder.AddTableName(tableName);
+            CommandTextBuilder.AddSelectFrom(columns ?? new string[]{});
             return this;
         }
-        
+
         ISelectBuilder ISelectBuilder.Add(params string[] columnNames)
         {
-            CommandTextBuilder.AddColumns(columnNames);
+            CommandTextBuilder.AddColumns(columnNames ?? new string[]{});
             return this;
         }
 
@@ -518,7 +504,7 @@ namespace DBInline.Classes
 
         IQuery ISelectBuilder.From(string tableName)
         {
-           CommandTextBuilder.AddFrom(tableName);
+            CommandTextBuilder.AddFrom(tableName);
            return this;
         }
         
@@ -697,12 +683,7 @@ namespace DBInline.Classes
             CommandTextBuilder.AddOr($"{fieldName}={name}");
         }
 
-
-        IQuery IInsertBuilder.From(string tableName)
-        {
-            CommandTextBuilder.AddFrom(tableName);
-            return this;
-        }
+        
 
         IColumnsBuilder IColumnsBuilder.Add(params string[] columnName)
         {
@@ -766,13 +747,13 @@ namespace DBInline.Classes
             return this;
         }
 
-        IRowBuilder IValuesBuilder.Row()
+        IRowBuilder IValuesBuilder.AddRow()
         {
             CommandTextBuilder.AddRow();
             return this;
         }
 
-        IInsertQuery IRowBuilder.Add<TIn>(TIn value)
+        IInsertQuery IRowBuilder.AddValue<TIn>(TIn value)
         {
             CommandTextBuilder.AddToRow(value);
             return this;
@@ -783,14 +764,8 @@ namespace DBInline.Classes
             CommandTextBuilder.AddColumnDefinition(column,type,charCount);
             return this;
         }
-
-        IInsertFromQuery IInsertFromBuilder.Select(params string[] columns)
-        {
-            CommandTextBuilder.AddInsertFromColumns(columns ?? new string[]{});
-            return this;
-        }
-
-        IRowBuilder IRowBuilder.Row()
+        
+        IRowBuilder IRowBuilder.AddRow()
         {
             CommandTextBuilder.AddRow();
             return this;
