@@ -81,7 +81,7 @@ var t = Transaction(t =>
        {
            Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
        })
-       .Select(r => (string) r[0]) //Create the objects
+       .Get(r => (string) r[0]) //Create the objects
        .ToList();
 });
 ```
@@ -99,7 +99,7 @@ return await TransactionAsync(t =>
                     .Param(("@name","Peter Brown") //Adding parameter as ValueTuple.
                     .Where("name like @name")
                     .Limit(5) // Setting Result count limit
-                    .Select(r => (string) r[0]) //Create the objects
+                    .Get(r => (string) r[0]) //Create the objects
                     .ToList();
             });
 ```
@@ -115,7 +115,7 @@ var customers = p.Query()
     .Select()
     .From("Customers")
     .limit(5)
-    .Select(r => (string)r[0]) //create desired object.
+    .Get(r => (string)r[0]) //create desired object.
     .ToList();
 
 //UPDATE
@@ -212,7 +212,7 @@ return await PoolAsync(async p =>
     
     await foreach (var x in p.Query()
         .Set(SelectQuery)
-        .SelectAsyncEnumerable(x => (string) x[1])) //Selecting IAsyncIEnumerable<T>
+        .GetAsyncEnumerable(x => (string) x[1])) //Selecting IAsyncIEnumerable<T>
         {
             list.Add(x);
         }
@@ -222,13 +222,13 @@ return await PoolAsync(async p =>
         .From("Customers")
         .Where("name", "John Doe")
         .Or("name", "James Smith")
-        .SelectAsync(x => (string) x[1]) //Selecting Task<List<string>>
+        .GetAsync(x => (string) x[1]) //Selecting Task<List<string>>
         .ConfigureAwait(false));
     
     var customers = await p.Query<int>()
         .Select("id","name")
         .From("Customers")
-        .SelectAsync(x => new Customer(x)) //Create some object.
+        .GetAsync(x => new Customer(x)) //Create some object.
         .ConfigureAwait(false);
 
     p.Query<string>()  //UPDATE + SELECT
@@ -255,7 +255,7 @@ return await QueryAsync<List<string>>('Some query', cmd =>
             {
                 {
                     return cmd
-                        .Select(r=>(string)r[0]) //Create the objects
+                        .Get(r=>(string)r[0]) //Create the objects
                         .ToList();
                 }
             });
