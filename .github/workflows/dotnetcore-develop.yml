@@ -16,4 +16,5 @@ jobs:
       uses: actions/setup-dotnet@v1.4.0
       with:
         dotnet-version: 3.1.101
-    - run: dotnet build /DBInline/DBInline.csproj
+    - working-directory: DBInline 
+    - run: dotnet build DBInline.csproj
