@@ -96,7 +96,7 @@ return await TransactionAsync(t =>
                     .From("Customers")
                     .Param("name","John Doe") //Adding parameter with name and value.
                     .Param(some IDbParameter Implementation) //Adding IDbParameter.
-                    .Param(("@name","Peter Brown") //Adding parameter as ValueTuple.
+                    .Param(("@name","Peter Brown")) //Adding parameter as ValueTuple.
                     .Where("name like @name")
                     .Limit(5) // Setting Result count limit
                     .Get(r => (string) r[0]) //Create the objects
