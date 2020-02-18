@@ -139,7 +139,7 @@ p.Query()
         Console.WriteLine("I am a rollback lambda!"); //Add C# Rollback
     })
     .Select() //Chaining Delete + Select query together
-    From("Customers")
+    .From("Customers")
     .Get(x => new Customer((int) x[0], (string) x[1]));
 
 //INSERT INTO ... VALUES
