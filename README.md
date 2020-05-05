@@ -4,8 +4,6 @@
 ![.NET Core master](https://github.com/NicoZweifel/DBInline/workflows/.NET%20Core%20master/badge.svg)
 
 - WIP
-- Currently all Tests pass.
-- Before using this in production, more extensive tests should be written, since there might still be bugs/unintended behaviour.
 
 # Summary
 
@@ -222,14 +220,13 @@ return await PoolAsync(async p =>
         .From("Customers")
         .Where("name", "John Doe")
         .Or("name", "James Smith")
-        .GetAsync(x => (string) x[1]) //Selecting Task<List<string>>
-        .ConfigureAwait(false));
+        .GetAsync(x => (string) x[1]);//Selecting Task<List<string>>
     
     var customers = await p.Query<int>()
         .Select("id","name")
         .From("Customers")
-        .GetAsync(x => new Customer(x)) //Create some object.
-        .ConfigureAwait(false);
+        .GetAsync(x => new Customer(x));//Create some object.
+        
 
     p.Query<string>()  //UPDATE + SELECT
         .Update(TableName)
@@ -242,7 +239,7 @@ return await PoolAsync(async p =>
         .Where("id",6)
         .Scalar();
         
-}).ConfigureAwait(false);
+});
 ```
 
 # CMD/QueryRun Examples (these will probably be removed):
